@@ -1,0 +1,35 @@
+{
+  "name": "agenthalo",
+  "version": "1.0.0",
+  "description": "一条命令装好 AgentHalo：跟着 AI 任务状态动的桌面伙伴。Install AgentHalo, a desktop companion that follows your AI agents' state.",
+  "bin": {
+    "agenthalo": "bin/agenthalo.js"
+  },
+  "files": [
+    "bin",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "os": [
+    "darwin"
+  ],
+  "license": "AGPL-3.0-only",
+  "keywords": [
+    "agenthalo",
+    "desktop-pet",
+    "ai-agent",
+    "claude-code",
+    "codex",
+    "macos"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/addsumtech/AgentHalo.git"
+  },
+  "homepage": "https://github.com/addsumtech/AgentHalo",
+  "bugs": {
+    "url": "https://github.com/addsumtech/AgentHalo/issues"
+  }
+}

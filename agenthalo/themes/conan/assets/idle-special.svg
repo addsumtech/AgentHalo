@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-15 -25 45 45" width="500" height="500" shape-rendering="crispEdges">
+<defs><style>
+#arm-L { transform-origin: 2.25px 9.5px; } #arm-R { transform-origin: 13.75px 9.5px; }
+
+
+.breathe { transform-origin: 7.5px 15px; animation: breathe 3.4s infinite ease-in-out; }
+@keyframes breathe { 0%,100% { transform: scale(1,1); } 50% { transform: scale(1.015,0.985); } }
+.pupils { transform-origin: 7.5px 4.8px; animation: blink 4.6s infinite ease-in-out; }
+@keyframes blink { 0%,8%,100% { transform: scaleY(1); } 4% { transform: scaleY(0.1); } }
+#eyes-js, #body-js, #shadow-js { transition: transform 0.2s ease-out; }
+#shadow-js { transform-origin: 7.5px 15px; }
+
+.keepsake { transform-origin: 16px 8px; animation: show 3s infinite ease-in-out; }
+@keyframes show { 0%,100% { transform: rotate(-7deg); } 50% { transform: rotate(8deg) translateY(-1px); } }
+#arm-R { transform: rotate(-105deg); }
+
+</style></defs>
+<g id="shadow-js"><rect x="2.5" y="15.3" width="11" height="0.9" fill="#000000" opacity="0.35"/></g>
+<g id="leg-L"><rect x="4" y="13.2" width="3" height="1.1" fill="#7F94BA"/><rect x="4.5" y="14.2" width="2" height="0.6" fill="#F3C69B"/><rect x="3.8" y="14.8" width="3.4" height="0.6" fill="#684E3E"/></g><g id="leg-R"><rect x="9" y="13.2" width="3" height="1.1" fill="#7F94BA"/><rect x="9.5" y="14.2" width="2" height="0.6" fill="#F3C69B"/><rect x="8.8" y="14.8" width="3.4" height="0.6" fill="#684E3E"/></g>
+<g id="body-js"><g class="breathe">
+<g id="arm-L">
+<rect x="1.5" y="9.3" width="1.5" height="4" fill="#2B63A5"/>
+<rect x="1.6" y="13.1" width="1.3" height="1.1" fill="#F3C69B"/>
+</g>
+<g id="arm-R">
+<rect x="13" y="9.3" width="1.5" height="4" fill="#2B63A5"/>
+<rect x="13.1" y="13.1" width="1.3" height="1.1" fill="#F3C69B"/>
+</g>
+<rect x="3" y="9" width="10" height="4.6" fill="#2B63A5"/><polygon points="5,9 11,9 9,13 7,13" fill="#FFFFFF" /><polygon points="5,9 6,9 7,13 5.5,12" fill="#354D72" /><polygon points="10,9 11,9 10.5,12 9,13" fill="#354D72" /><polygon points="5.7,9.4 8,10 10.3,9.4 10.3,11.3 8,10.6 5.7,11.3" fill="#CF3542" />
+
+<g id="head">
+<polygon points="3,.5 12.5,.5 13.4,3 13,6 10.5,8.3 8,9 5.5,8.3 3,6 2.5,3" fill="#F3C69B" /><ellipse cx="2.1" cy="4.5" rx=".9" ry="1.5" fill="#E7B88F"/><ellipse cx="13.8" cy="4.5" rx=".9" ry="1.5" fill="#E7B88F"/>
+<polygon points="2,4 1,0 3,-2 3,-4 6,-3 9,-4 12,-3 14,-1 17,-2 15,1 13,1 13,4 11,2 10,4 8,1 6,3 5,1 3,4" fill="#202737" /><rect x="5" y="-2" width="5" height="0.7" fill="#3D4B65"/>
+<path d="M3.3999999999999995 3.3 Q5.1 2.7 6.5 3.6 L6.199999999999999 5.8 Q5.1 6.2 3.8999999999999995 5.5 Z" fill="white"/><path d="M9.100000000000001 3.3 Q10.8 2.7 12.200000000000001 3.6 L11.9 5.8 Q10.8 6.2 9.600000000000001 5.5 Z" fill="white"/><g ><g class="pupils"><ellipse cx="5.199999999999999" cy="4.6" rx=".82" ry="1.23" fill="#3B7299"/><ellipse cx="5.199999999999999" cy="4.7" rx=".38" ry=".9" fill="#1E344A"/><circle cx="4.8999999999999995" cy="3.9" r=".32" fill="white"/><ellipse cx="10.9" cy="4.6" rx=".82" ry="1.23" fill="#3B7299"/><ellipse cx="10.9" cy="4.7" rx=".38" ry=".9" fill="#1E344A"/><circle cx="10.600000000000001" cy="3.9" r=".32" fill="white"/></g></g><path d="M3.7 2.5 L6.5 2.4 M9.5 2.3 L12 2.8 M7.7 5.5 L7.1 6.3 L8.2 6.3 M6.8 7.5 Q8.3 8.1 9.6 7.3" stroke="#584131" stroke-width=".23" fill="none"/><rect x="2.9" y="3" width="4.8" height="3.5" rx="1.25" fill="none" stroke="#1C3243" stroke-width=".34"/><rect x="8.25" y="3" width="4.8" height="3.5" rx="1.25" fill="none" stroke="#1C3243" stroke-width=".34"/><path d="M7.7 4.1 H8.25 M1.6 3.8 H2.9 M13 3.8 H14.2" stroke="#1C3243" stroke-width=".3"/>
+</g>
+
+</g></g>
+<g class="keepsake"><g class="" transform="translate(15 5)"><circle cx="2.6" cy="2.2" r="2.1" fill="#B8DEF0" stroke="#5A7188" stroke-width=".7"/><g transform="rotate(-30 2.6 4)"><rect x="2.2" y="4" width="0.9" height="3" fill="#604537"/></g></g></g>
+</svg>

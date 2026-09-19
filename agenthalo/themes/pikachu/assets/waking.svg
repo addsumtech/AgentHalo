@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-15 -25 45 45" width="500" height="500" shape-rendering="crispEdges">
+<defs><style>
+#arm-L { transform-origin: 2.25px 9.5px; } #arm-R { transform-origin: 13.75px 9.5px; }
+
+
+.stretch { transform-origin: 7.5px 15px; animation: stretch 1.5s ease-in-out both; }
+@keyframes stretch { 0% { transform: scale(1,0.97); } 50% { transform: scale(1,1.03); } 100% { transform: scale(1,1); } }
+#arm-L { animation: sL 1.5s both; } #arm-R { animation: sR 1.5s both; }
+@keyframes sL { 0% { transform: rotate(0); } 50% { transform: rotate(150deg); } 100% { transform: rotate(0); } }
+@keyframes sR { 0% { transform: rotate(0); } 50% { transform: rotate(-150deg); } 100% { transform: rotate(0); } }
+#shadow-js { transform-origin: 7.5px 15px; }
+
+</style></defs>
+<polygon points="12,12 17,9 14,7 19,3 21,5 18,7 20,9 15,13" fill="#EABF39" /><g id="shadow-js"><rect x="2.5" y="15.3" width="11" height="0.9" fill="#000000" opacity="0.35"/></g>
+<g id="leg-L"><rect x="4" y="13" width="2.8" height="1.8" fill="#F3CB3C"/><rect x="3.5" y="14.3" width="3.8" height="1.2" fill="#F3CB3C"/></g><g id="leg-R"><rect x="9" y="13" width="2.8" height="1.8" fill="#F3CB3C"/><rect x="8.5" y="14.3" width="3.8" height="1.2" fill="#F3CB3C"/></g>
+<g id="body-js"><g class="stretch">
+<g id="arm-L"><rect x="0.9" y="9" width="1.7" height="3.8" fill="#F3CB3C"/><rect x="0.6" y="12" width="2.3" height="1.7" fill="#F3CB3C"/></g>
+<g id="arm-R"><rect x="13.3" y="9" width="1.7" height="3.8" fill="#F3CB3C"/><rect x="13" y="12" width="2.3" height="1.7" fill="#F3CB3C"/></g>
+<polygon points="3,8 13,8 14,11 12,14 4,14 2,11" fill="#F3CB3C" /><rect x="4" y="10.6" width="1.2" height="2" fill="#FFE87B"/>
+
+<g id="head">
+<polygon points="3,1 0,-6 1,-9 3,-7 6,0" fill="#F3CB3C" /><polygon points="0,-6 1,-9 3,-7 3.7,-4.8 1.4,-3.8" fill="#1E2A47" /><polygon points="10,0 14,-7 17,-8 16,-4 13,2" fill="#F3CB3C" /><polygon points="14,-7 17,-8 16,-4 13.3,-4.3" fill="#1E2A47" /><polygon points="3,-1 12,-1 14,1 15,4 14,7 12,9 4,9 1,7 0,4 1,1" fill="#F3CB3C" /><rect x="2.5" y="5.8" width="2.2" height="1.6" fill="#E96542"/><rect x="11.2" y="5.8" width="2.2" height="1.6" fill="#E96542"/>
+
+<g ><g class="pupils"><path d="M3.8 3.5 Q4.6 2.6 5.4 3.5" stroke="#1E2A47" stroke-width=".4" fill="none"/><path d="M10.4 3.5 Q11.2 2.6 12.0 3.5" stroke="#1E2A47" stroke-width=".4" fill="none"/></g></g><polygon points="7.2,4.4 8.8,4.4 8,5" fill="#1E2A47" /><path d="M6.4 6 Q7.1 7.3 8 6.3 Q8.9 7.3 9.6 6" fill="none" stroke="#795638" stroke-width=".4"/>
+</g>
+
+</g></g>
+
+</svg>

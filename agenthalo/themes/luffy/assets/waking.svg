@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-15 -25 45 45" width="500" height="500" shape-rendering="crispEdges">
+<defs><style>
+#arm-L { transform-origin: 2.25px 9.5px; } #arm-R { transform-origin: 13.75px 9.5px; }
+
+
+.stretch { transform-origin: 7.5px 15px; animation: stretch 1.5s ease-in-out both; }
+@keyframes stretch { 0% { transform: scale(1,0.97); } 50% { transform: scale(1,1.03); } 100% { transform: scale(1,1); } }
+#arm-L { animation: sL 1.5s both; } #arm-R { animation: sR 1.5s both; }
+@keyframes sL { 0% { transform: rotate(0); } 50% { transform: rotate(150deg); } 100% { transform: rotate(0); } }
+@keyframes sR { 0% { transform: rotate(0); } 50% { transform: rotate(-150deg); } 100% { transform: rotate(0); } }
+#shadow-js { transform-origin: 7.5px 15px; }
+
+</style></defs>
+<g id="shadow-js"><rect x="2.5" y="15.3" width="11" height="0.9" fill="#000000" opacity="0.35"/></g>
+<g id="leg-L"><rect x="4" y="13.2" width="3" height="1.1" fill="#3C75BE"/><rect x="4.5" y="14.2" width="2" height="0.6" fill="#F3C69B"/><rect x="3.8" y="14.8" width="3.4" height="0.6" fill="#684E3E"/></g><g id="leg-R"><rect x="9" y="13.2" width="3" height="1.1" fill="#3C75BE"/><rect x="9.5" y="14.2" width="2" height="0.6" fill="#F3C69B"/><rect x="8.8" y="14.8" width="3.4" height="0.6" fill="#684E3E"/></g>
+<g id="body-js"><g class="stretch">
+<g id="arm-L"><rect x="1.5" y="9.3" width="1.5" height="4" fill="#F3C69B"/><rect x="1.3" y="12.7" width="1.9" height="1.6" fill="#F3C69B"/></g>
+<g id="arm-R"><rect x="13" y="9.3" width="1.5" height="4" fill="#F3C69B"/><rect x="12.8" y="12.7" width="1.9" height="1.6" fill="#F3C69B"/></g>
+<rect x="3" y="9" width="10" height="4.5" fill="#F3C69B"/><rect x="3" y="9" width="3" height="4.5" fill="#DF3444"/><rect x="10" y="9" width="3" height="4.5" fill="#DF3444"/><rect x="10.8" y="10" width="0.5" height="0.5" fill="#F4CE67"/><rect x="10.8" y="12" width="0.5" height="0.5" fill="#F4CE67"/>
+
+<g id="head">
+<polygon points="2.8,.3 12.5,.3 13.8,2.5 13.2,6.5 11,8.7 8,9.2 5,8.7 2.5,6.3 1.8,3" fill="#F3C69B" /><ellipse cx="2.1" cy="4.5" rx=".9" ry="1.5" fill="#E7B88F"/><ellipse cx="13.8" cy="4.5" rx=".9" ry="1.5" fill="#E7B88F"/>
+<polygon points="2,0 3,-3 12,-3 14,0 13,5 12,3 11,4 10,2 8,3 7,1 5,3 4,2 3,5" fill="#202737" /><polygon points="2,-1 2,-4 4,-4 4,-5 12,-5 12,-4 14,-4 14,-1" fill="#EFC571" /><rect x="2" y="-2" width="12" height="1.3" fill="#D84540"/><rect x="-1" y="-0.8" width="18" height="1.2" fill="#DCAA58"/><rect x="1" y="-0.8" width="14" height="0.4" fill="#FFE4A0"/>
+<g ><g class="pupils"><path d="M3.5999999999999996 4.3 Q5.1 3.8 6.5 4.1" stroke="#34302B" stroke-width=".35" fill="none"/><path d="M9.3 4.3 Q10.8 3.8 12.200000000000001 4.1" stroke="#34302B" stroke-width=".35" fill="none"/></g></g><path d="M3.7 2.5 Q5 2 6.2 2.5 M9.5 2.5 Q10.8 2 12 2.5 M10.4 6 H12.6 M11 5.6 V6.4 M12 5.6 V6.4 M7.6 5.5 L7.1 6.2 L8 6.2" stroke="#6F4C39" stroke-width=".24" fill="none"/><path d="M4.9 6.8 Q8 7.7 11.1 6.8 L10.2 8.2 Q8 9.4 5.8 8.2 Z" fill="#FFF5E0" stroke="#6F4C39" stroke-width=".24"/><ellipse cx="8" cy="7.7" rx="1.1" ry=".8" fill="#804A39"/>
+</g>
+
+</g></g>
+
+</svg>

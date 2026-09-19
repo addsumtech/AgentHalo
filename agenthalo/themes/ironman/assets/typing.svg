@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-15 -25 45 45" width="500" height="500" shape-rendering="crispEdges">
+<defs><style>
+#arm-L { transform-origin: 2.25px 9.5px; } #arm-R { transform-origin: 13.75px 9.5px; }
+#arm-L { transform: rotate(-25deg); }
+#arm-R { transform: rotate(25deg); }
+
+.breathe { transform-origin: 7.5px 15px; animation: breathe 3.4s infinite ease-in-out; }
+@keyframes breathe { 0%,100% { transform: scale(1,1); } 50% { transform: scale(1.015,0.985); } }
+.pupils { transform-origin: 7.5px 4.8px; animation: blink 4.6s infinite ease-in-out; }
+@keyframes blink { 0%,8%,100% { transform: scaleY(1); } 4% { transform: scaleY(0.1); } }
+#eyes-js, #body-js, #shadow-js { transition: transform 0.2s ease-out; }
+#shadow-js { transform-origin: 7.5px 15px; }
+
+.hand-l { animation: tap 0.28s infinite alternate ease-in-out; } .hand-r { animation: tap 0.28s 0.14s infinite alternate ease-in-out both; }
+@keyframes tap { from { transform: translateY(0); } to { transform: translateY(-0.6px); } }
+.code1 { animation: code 1.6s infinite step-end; } .code2 { animation: code 1.6s 0.4s infinite step-end both; } .code3 { animation: code 1.6s 0.8s infinite step-end both; }
+@keyframes code { 0% { opacity: 0; } 30%,100% { opacity: 1; } }
+
+</style></defs>
+<g id="shadow-js"><rect x="2.5" y="15.3" width="11" height="0.9" fill="#000000" opacity="0.35"/></g>
+<g id="leg-L"><rect x="4" y="13" width="2.8" height="1.8" fill="#9C3038"/><rect x="3.5" y="14.3" width="3.8" height="1.2" fill="#9C3038"/></g><g id="leg-R"><rect x="9" y="13" width="2.8" height="1.8" fill="#9C3038"/><rect x="8.5" y="14.3" width="3.8" height="1.2" fill="#9C3038"/></g>
+<g id="body-js"><g class="breathe">
+<g id="arm-L"><rect x="0.9" y="9" width="1.7" height="3.8" fill="#A93639"/></g>
+<g id="arm-R"><rect x="13.3" y="9" width="1.7" height="3.8" fill="#A93639"/></g>
+<polygon points="2,9 14,9 12,14 4,14" fill="#A93639" /><polygon points="3,9 6.2,9 6,10.5 3,10.2" fill="#E4B657" /><polygon points="9.8,9 13,9 13,10.2 10,10.5" fill="#E4B657" /><circle cx="8" cy="10.5" r="1.25" fill="#70D0E4"/><circle cx="8" cy="10.5" r=".65" fill="#EAFCFF"/><rect x="5" y="12" width="6" height="0.5" fill="#742C35"/><rect x="6" y="13" width="4" height="0.5" fill="#742C35"/>
+<g id="laptop"><rect x="3.6" y="12.2" width="8.8" height="1.2" fill="#4A5468"/><rect x="4.2" y="8.6" width="7.6" height="3.7" fill="#8A93A6"/><rect x="4.6" y="9" width="6.8" height="2.9" fill="#0B1F00"/><rect x="5" y="9.4" width="2.6" height="0.5" fill="#76B900" class="code1"/><rect x="5" y="10.2" width="4" height="0.5" fill="#FFFFFF" class="code2"/><rect x="5" y="11" width="3.2" height="0.5" fill="#A3E635" class="code3"/><g class="hand-l"><rect x="5" y="11.4" width="1.4" height="0.9" fill="#C44A43"/></g><g class="hand-r"><rect x="9.6" y="11.4" width="1.4" height="0.9" fill="#C44A43"/></g></g>
+<g id="head">
+<polygon points="3,-4 13,-4 15,-2 16,4 14,7 11,9 5,9 2,7 0,4 1,-2" fill="#A93639" /><polygon points="3,-2 6,-3 7,-1 9,-1 10,-3 13,-2 13,1 14,3 12,7 4,7 2,3 3,1" fill="#E4B657" /><rect x="4" y="7" width="8" height="0.7" fill="#C48C3C"/><rect x="1.2" y="2" width="1" height="3" fill="#742C35"/><rect x="13.8" y="2" width="1" height="3" fill="#742C35"/>
+
+<polygon points="3,2 6.5,2.8 6,3.6 3.5,3.2" fill="#BAEDFA" /><polygon points="9.5,2.8 13,2 12.5,3.2 10,3.6" fill="#BAEDFA" /><rect x="5.5" y="5.7" width="5" height="0.4" fill="#916230"/><rect x="4.5" y="5" width="1" height="0.4" fill="#916230"/><rect x="10.5" y="5" width="1" height="0.4" fill="#916230"/>
+</g>
+
+</g></g>
+
+</svg>

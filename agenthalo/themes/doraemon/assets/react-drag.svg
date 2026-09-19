@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-15 -25 45 45" width="500" height="500" shape-rendering="crispEdges">
+<defs><style>
+#arm-L { transform-origin: 2.25px 9.5px; } #arm-R { transform-origin: 13.75px 9.5px; }
+
+
+#arm-L { animation: flailL 0.3s infinite alternate ease-in-out; } #arm-R { animation: flailR 0.3s infinite alternate ease-in-out; }
+@keyframes flailL { from { transform: rotate(120deg); } to { transform: rotate(60deg); } }
+@keyframes flailR { from { transform: rotate(-120deg); } to { transform: rotate(-60deg); } }
+#leg-L { transform-origin: 5.5px 13.4px; animation: kick 0.35s infinite alternate ease-in-out; }
+#leg-R { transform-origin: 10.5px 13.4px; animation: kick 0.35s 0.17s infinite alternate-reverse ease-in-out both; }
+@keyframes kick { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
+.sway { transform-origin: 7.5px 9px; animation: sway 0.9s infinite ease-in-out; }
+@keyframes sway { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+#shadow-js { opacity: 0.15; }
+
+</style></defs>
+<g id="shadow-js"><rect x="2.5" y="15.3" width="11" height="0.9" fill="#000000" opacity="0.35"/></g>
+<g id="leg-L"><rect x="2.5" y="13.7" width="5.5" height="1.7" fill="#FFFFFF"/></g><g id="leg-R"><rect x="8" y="13.7" width="5.5" height="1.7" fill="#FFFFFF"/></g>
+<g id="body-js"><g class="sway">
+<g id="arm-L"><rect x="1.5" y="9.3" width="1.5" height="4" fill="#1596D0"/><rect x="1.3" y="12.7" width="1.9" height="1.6" fill="#FFFFFF"/></g>
+<g id="arm-R"><rect x="13" y="9.3" width="1.5" height="4" fill="#1596D0"/><rect x="12.8" y="12.7" width="1.9" height="1.6" fill="#FFFFFF"/></g>
+<rect x="2" y="8.5" width="12" height="5.5" fill="#1596D0"/><rect x="2" y="8.5" width="12" height="0.8" fill="#D93642"/><ellipse cx="8" cy="11.4" rx="4.4" ry="2.9" fill="white"/><path d="M5 11.2 H11 Q11 14 8 14 Q5 14 5 11.2" fill="white" stroke="#24364A" stroke-width=".3"/><circle cx="8" cy="9.4" r="1" fill="#F1C847" stroke="#9E7B2F" stroke-width=".2"/><rect x="7.2" y="9.1" width="1.6" height="0.25" fill="#9E7B2F"/><rect x="7.8" y="9.6" width="0.4" height="0.7" fill="#9E7B2F"/>
+
+<g id="head">
+<polygon points="3,-4 13,-4 13,-3 15,-3 15,-1 17,-1 17,6 15,6 15,8 13,8 13,9 3,9 3,8 1,8 1,6 -1,6 -1,-1 1,-1 1,-3 3,-3" fill="#1596D0" /><polygon points="3,0 13,0 15,2 15,6 13,8 3,8 1,6 1,2" fill="#FFFFFF" />
+
+<rect x="4.2" y="-1.6" width="3.8" height="4.6" rx="1.5" fill="white" stroke="#24364A" stroke-width=".28"/><rect x="8" y="-1.6" width="3.8" height="4.6" rx="1.5" fill="white" stroke="#24364A" stroke-width=".28"/><g ><g class="pupils"><rect x="6" y="0.6" width="1.1" height="1.7" fill="#1E2A47"/><rect x="9" y="0.6" width="1.1" height="1.7" fill="#1E2A47"/></g></g><circle cx="8" cy="3" r="1.05" fill="#E13D46"/><rect x="7.5" y="2.4" width="0.5" height="0.4" fill="#FFFFFF"/><rect x="7.85" y="4" width="0.3" height="2.4" fill="#1E2A47"/><path d="M4 6 Q8 9 12 6 M1 3 L4 4 M1 5 L4 5 M1 7 L4 6 M12 4 L15 3 M12 5 L15 5 M12 6 L15 7" fill="none" stroke="#24364A" stroke-width=".32"/>
+</g>
+
+</g></g>
+
+</svg>

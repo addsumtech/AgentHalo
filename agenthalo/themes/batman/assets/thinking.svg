@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-15 -25 45 45" width="500" height="500" shape-rendering="crispEdges">
+<defs><style>
+#arm-L { transform-origin: 2.25px 9.5px; } #arm-R { transform-origin: 13.75px 9.5px; }
+#arm-R { transform: rotate(135deg); }
+
+.breathe { transform-origin: 7.5px 15px; animation: breathe 3.4s infinite ease-in-out; }
+@keyframes breathe { 0%,100% { transform: scale(1,1); } 50% { transform: scale(1.015,0.985); } }
+.pupils { transform-origin: 7.5px 4.8px; animation: blink 4.6s infinite ease-in-out; }
+@keyframes blink { 0%,8%,100% { transform: scaleY(1); } 4% { transform: scaleY(0.1); } }
+#eyes-js, #body-js, #shadow-js { transition: transform 0.2s ease-out; }
+#shadow-js { transform-origin: 7.5px 15px; }
+
+.tilt { transform-origin: 7.5px 15px; animation: tilt 2.6s infinite ease-in-out; }
+@keyframes tilt { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+.dot1 { animation: dot 1.5s infinite; } .dot2 { animation: dot 1.5s 0.25s infinite both; } .dot3 { animation: dot 1.5s 0.5s infinite both; }
+@keyframes dot { 0%,100% { opacity: 0.25; } 50% { opacity: 1; } }
+.cloud { animation: float 3s infinite ease-in-out; }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-0.6px); } }
+
+</style></defs>
+<polygon points="4,8 12,8 16,15 12,14 10,15 8,14 6,15 4,14 0,15" fill="#1C2836" /><g id="shadow-js"><rect x="2.5" y="15.3" width="11" height="0.9" fill="#000000" opacity="0.35"/></g>
+<g id="leg-L"><rect x="4" y="13" width="2.8" height="1.8" fill="#222C39"/><rect x="3.5" y="14.3" width="3.8" height="1.2" fill="#222C39"/></g><g id="leg-R"><rect x="9" y="13" width="2.8" height="1.8" fill="#222C39"/><rect x="8.5" y="14.3" width="3.8" height="1.2" fill="#222C39"/></g>
+<g id="body-js"><g class="tilt">
+<g id="arm-L"><rect x="0.9" y="9" width="1.7" height="3.8" fill="#39414C"/><rect x="0.6" y="12" width="2.3" height="1.7" fill="#202C39"/></g>
+<g id="arm-R"><rect x="13.3" y="9" width="1.7" height="3.8" fill="#39414C"/><rect x="13" y="12" width="2.3" height="1.7" fill="#202C39"/></g>
+<rect x="2.4" y="9" width="11.2" height="4.7" fill="#39414C"/><ellipse cx="8" cy="10.6" rx="3.6" ry="1.4" fill="#DFC44F"/><polygon points="4.8,10 6.3,10.6 7,9.8 7.5,10.4 8.5,10.4 9,9.8 9.7,10.6 11.2,10 10.6,11.2 9,11.2 8,12 7,11.2 5.4,11.2" fill="#1E2A47" /><rect x="2.4" y="13" width="11.2" height="1" fill="#D4AD43"/><rect x="7.2" y="12.8" width="1.6" height="1.4" fill="#F2D466"/>
+
+<g id="head">
+<polygon points="1,2 1,-7 4,-4 5,-2 11,-2 12,-4 15,-7 15,6 13,7 3,7 1,6" fill="#222C39" /><polygon points="5,5 11,5 12,7 10,9 6,9 4,7" fill="#D6AC88" /><polygon points="2,-2 4,-1 4,3 2,4" fill="#354251" />
+
+<polygon points="3,2 6.5,2.8 6,3.6 3.5,3.2" fill="#FFFFFF" /><polygon points="9.5,2.8 13,2 12.5,3.2 10,3.6" fill="#FFFFFF" /><rect x="6" y="6.9" width="4" height="0.4" fill="#735A4C"/>
+</g>
+
+</g></g>
+<g class="cloud"><circle cx="14.5" cy="-1.5" r="0.8" fill="#FFFFFF" stroke="#1E2A47" stroke-width="0.35"/><circle cx="16.6" cy="-4.2" r="1.2" fill="#FFFFFF" stroke="#1E2A47" stroke-width="0.35"/><rect x="15.2" y="-11.5" width="10" height="5.8" rx="2.6" fill="#FFFFFF" stroke="#1E2A47" stroke-width="0.4"/><rect class="dot1" x="17.2" y="-9.2" width="1.3" height="1.3" fill="#1E2A47"/><rect class="dot2" x="19.5" y="-9.2" width="1.3" height="1.3" fill="#1E2A47"/><rect class="dot3" x="21.8" y="-9.2" width="1.3" height="1.3" fill="#1E2A47"/></g>
+</svg>
