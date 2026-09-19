@@ -173,7 +173,7 @@ async function main() {
 
     spawnSync("/usr/bin/open", ["-a", target], { stdio: "ignore" });
     log("");
-    log("装好了，桌宠在菜单栏。");
+    log("装好了，点击 Dock 图标可打开设置，菜单栏也保留入口。");
     log("下一步：设置 → 连接应用，给你在用的 AI 工具装上 hook。");
   } finally {
     fs.rmSync(work, { recursive: true, force: true });

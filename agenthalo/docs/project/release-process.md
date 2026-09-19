@@ -1,6 +1,43 @@
 # Release Process
 
-Use this flow when preparing a Clawd app release.
+## AgentHalo macOS releases
+
+AgentHalo currently publishes macOS packages from local builds. The upstream
+cross-platform workflow below is retained as reference; it lives inside this
+application directory and does not run as a repository-root GitHub workflow.
+
+1. Keep the app's `package.json`, `package-lock.json`, and the sibling
+   `agenthalo-installer/package.json` on the same release version.
+2. Add `docs/releases/release-vX.Y.Z.md`; explicitly stage the release note
+   because the inherited `docs/**` ignore rule excludes new documents.
+3. Run `npm run verify:release`, relevant tests, `npm test`, and `npm run audit:assets`.
+   Record any pre-existing failures separately from release regressions.
+4. Build both architectures with `electron-builder --mac dmg zip --arm64 --x64 --publish never`.
+5. Verify the exact ZIP and DMG contents, signatures, native architecture,
+   packaged Koffi calls, and SHA-256 values. Run the installer's
+   `scripts/sync-checksums.js` against these final ZIP files.
+6. Commit and push the source and version tag. Upload the four installers and
+   checksum file to a draft Release; compare uploaded hashes before publishing.
+7. Publish the matching npm installer only after the Release downloads work.
+   Verify both the public registry version and an installation from the public ZIP.
+
+### v1.0.1 Draft Smoke Checklist
+
+- Confirm the packaged app shows `1.0.1` metadata on both architectures.
+- Settings -> About shows `v1.0.1`, sourced from `app.getVersion()`.
+- Fresh macOS installs show a Dock icon; existing visibility preferences persist.
+  Clicking the Dock icon opens Settings.
+- Character import is below the gallery and accepts either supported ZIP format.
+- The extension download is prominent; an installed extension with no activity
+  prompts the user to start a conversation on an AI website.
+- Verify all four packages and the npm installer's fixed checksums match.
+- Current macOS builds are ad-hoc signed and not notarized. State this in the
+  release notes and check the documented manual first-open route; do not claim
+  Developer ID signing or notarization.
+
+## Upstream release process (reference)
+
+The following flow describes the upstream Clawd release infrastructure.
 
 ## Before Tagging
 

@@ -21,6 +21,8 @@ function hashIdentityEmail(email) {
 // 新增条目：
 //   node -e 'console.log(require("node:crypto").createHash("sha256").update("邮箱".toLowerCase()).digest("hex"))'
 const IDENTITY_OVERRIDES = new Map(Object.entries({
+  // Addsum's public maintenance identity is not an external contributor.
+  "b649cc55e0c0a8a90201392300457ad7e43c3543370ce19dfeb3766b642dd3cd": null,
   "29773bb4e96017104e88562bec5d9c3d40f2a730f21f6680e2284fe884386ee0": null,
   "0b4a1ece3482458a77bfec095ff93dc3b5fb8fe4ec391415daff6f6ed222ad2b": null,
   "c4c9cc242c936acbd2b31fee72627ac05d0a1622eda8b1447fede08c3092c06d": null,
