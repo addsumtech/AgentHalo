@@ -21,6 +21,16 @@ application directory and does not run as a repository-root GitHub workflow.
 7. Publish the matching npm installer only after the Release downloads work.
    Verify both the public registry version and an installation from the public ZIP.
 
+### v1.0.3 Draft Smoke Checklist
+
+- Confirm the packaged app shows `1.0.3` metadata on both architectures.
+- Settings -> About shows `v1.0.3`, sourced from `app.getVersion()`.
+- Codex memory maintenance hooks never open a task card or change the pet state.
+- An existing memory worker card retires on its next hook without a completion notice.
+- Real user threads in the memory directory, projects named `memories`, remote
+  sessions, and sessions with an unavailable thread database remain visible.
+- Verify the published short command upgrades the previous application.
+
 ### v1.0.2 Draft Smoke Checklist
 
 - Confirm the packaged app shows `1.0.2` metadata on both architectures.

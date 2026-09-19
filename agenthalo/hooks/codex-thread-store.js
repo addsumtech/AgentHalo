@@ -206,6 +206,16 @@ function classifyCodexThread(record) {
   return "visible";
 }
 
+// Memory maintenance uses app-server hooks but has no user thread. Directory
+// identity plus a successful missing-row lookup lets us filter it before Stop
+// without hiding ordinary new conversations whose records are still arriving.
+function isCodexMemoryMaintenanceThread(record, cwd, codexDir = getCodexDir()) {
+  if (!record || record.available !== true || record.found !== false) return false;
+  if (typeof cwd !== "string" || !path.isAbsolute(cwd)) return false;
+  const relative = path.relative(path.resolve(codexDir, "memories"), path.resolve(cwd));
+  return relative === "" || (relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative));
+}
+
 let sharedStore = null;
 
 function getSharedCodexThreadStore() {
@@ -219,4 +229,5 @@ module.exports = {
   createCodexThreadStore,
   findStateDbPath,
   getSharedCodexThreadStore,
+  isCodexMemoryMaintenanceThread,
 };

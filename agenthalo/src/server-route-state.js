@@ -39,7 +39,7 @@ const {
   isCodexOfficialEmptyTurnEnd,
 } = require("./server-codex-official-turns");
 const { isCodexChildThread } = require("./codex-jsonl-sessions");
-const { classifyCodexThread } = require("../hooks/codex-thread-store");
+const { classifyCodexThread, isCodexMemoryMaintenanceThread } = require("../hooks/codex-thread-store");
 const { normalizeTranscriptPath } = require("./transcript-path");
 const { normalizeQuotaGroup } = require("../hooks/quota-bucket");
 const { ANTIGRAVITY_QUOTA_FIELDS } = require("../hooks/antigravity-context-usage");
@@ -332,6 +332,26 @@ function handleStatePost(req, res, options) {
       const codexSource = typeof data.codex_source === "string" && data.codex_source.trim()
         ? data.codex_source.trim()
         : null;
+      if (agentId === "codex" && data.hook_source === "codex-official"
+        && !host && !wslDistro && trustedProfileId === "local") {
+        const existing = ctx.sessions && ctx.sessions.get(session_id);
+        const record = typeof ctx.lookupCodexThread === "function"
+          ? ctx.lookupCodexThread(sessionIdentity.rawSessionId)
+          : null;
+        if (isCodexMemoryMaintenanceThread(record, cwd || (existing && existing.cwd) || "")) {
+          // Drop the entire lifecycle, before notices or pet state changes.
+          // Retire cards left by older versions without reporting completion.
+          if (existing) ctx.updateSession(session_id, "sleeping", "SessionEnd", {
+            agentId, profileId: trustedProfileId, rawSessionId: sessionIdentity.rawSessionId,
+            headless: true,
+          });
+          codexOfficialTurns.delete(session_id);
+          recordRequestHookEvent.droppedUnsupported();
+          res.writeHead(204, { [CLAWD_SERVER_HEADER]: CLAWD_SERVER_ID });
+          res.end();
+          return;
+        }
+      }
       const ghosttyTerminalId = typeof data.ghostty_terminal_id === "string" && data.ghostty_terminal_id.trim()
         ? data.ghostty_terminal_id.trim()
         : null;

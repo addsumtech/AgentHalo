@@ -10,6 +10,7 @@ const {
   classifyCodexThread,
   createCodexThreadStore,
   findStateDbPath,
+  isCodexMemoryMaintenanceThread,
 } = require("../hooks/codex-thread-store");
 
 function tmpCodexDir() {
@@ -42,6 +43,19 @@ function fakeSqlite(rows, options = {}) {
 }
 
 describe("codex thread store", () => {
+  it("recognizes only unregistered tasks within the configured Codex memory directory", () => {
+    const home = path.join(os.tmpdir(), "custom-codex-home");
+    const absent = { available: true, found: false };
+    for (const cwd of [path.join(home, "memories"), path.join(home, "memories", "extensions", "ad_hoc")]) {
+      assert.strictEqual(isCodexMemoryMaintenanceThread(absent, cwd, home), true);
+      assert.strictEqual(isCodexMemoryMaintenanceThread({ available: true, found: true, source: "user" }, cwd, home), false);
+      assert.strictEqual(isCodexMemoryMaintenanceThread({ available: false, found: false }, cwd, home), false);
+    }
+    for (const cwd of ["memories", "", path.join(home, "memories-old"), path.join(home, "memories", "..", "project"), path.join(os.tmpdir(), "another-project", "memories")]) {
+      assert.strictEqual(isCodexMemoryMaintenanceThread(absent, cwd, home), false, cwd);
+    }
+  });
+
   it("picks the highest state_<n>.sqlite, because Codex bumps the number on migration", () => {
     const dir = tmpCodexDir();
     for (const name of ["state_4.sqlite", "state_5.sqlite", "state_12.sqlite", "notes.sqlite"]) {

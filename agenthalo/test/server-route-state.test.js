@@ -4,6 +4,7 @@ const { describe, it } = require("node:test");
 const assert = require("node:assert");
 const { EventEmitter } = require("node:events");
 const path = require("node:path");
+const os = require("node:os");
 
 const {
   CLAWD_SERVER_HEADER,
@@ -190,6 +191,70 @@ describe("server-route-state health", () => {
 });
 
 describe("server-route-state POST", () => {
+  describe("Codex memory maintenance", () => {
+    const memoryDir = path.join(process.env.CODEX_HOME || path.join(os.homedir(), ".codex"), "memories");
+    const absent = { available: true, found: false };
+    const body = (fields = {}) => JSON.stringify({
+      agent_id: "codex", hook_source: "codex-official",
+      session_id: "codex:memory-worker", cwd: memoryDir,
+      state: "working", event: "PreToolUse", ...fields,
+    });
+
+    it("never opens a task or drives the pet during the background worker lifecycle", async () => {
+      for (const [event, state] of [["UserPromptSubmit", "thinking"], ["PreToolUse", "working"], ["PostToolUse", "working"], ["Stop", "attention"]]) {
+        const res = await callStatePost(body({ event, state }), {
+          ctx: { lookupCodexThread: () => absent },
+        });
+        assert.strictEqual(res.statusCode, 204, event);
+        assert.deepStrictEqual(res.calls.updateSession, [], event);
+        assert.deepStrictEqual(res.calls.setState, [], event);
+      }
+    });
+
+    it("retires an already visible memory worker without a completion notification", async () => {
+      const sid = localSessionKey("codex:memory-worker");
+      const res = await callStatePost(body({ cwd: undefined }), {
+        ctx: {
+          lookupCodexThread: () => absent,
+          sessions: new Map([[sid, { agentId: "codex", cwd: memoryDir, state: "working" }]]),
+        },
+      });
+      assert.strictEqual(res.statusCode, 204);
+      assert.strictEqual(res.calls.updateSession.length, 1);
+      assert.deepStrictEqual(res.calls.updateSession[0].slice(0, 3), [sid, "sleeping", "SessionEnd"]);
+      assert.deepStrictEqual(res.calls.setState, []);
+    });
+
+    it("keeps real conversations in the memory directory and other projects named memories", async () => {
+      for (const [cwd, record] of [[memoryDir, { available: true, found: true, source: "user" }], [path.join(os.tmpdir(), "project", "memories"), absent]]) {
+        const res = await callStatePost(body({ cwd }), { ctx: { lookupCodexThread: () => record } });
+        assert.strictEqual(res.statusCode, 200);
+        assert.strictEqual(res.calls.updateSession[0][3].headless, false);
+      }
+    });
+
+    it("does not hide tasks when the database is unavailable or the source is remote", async () => {
+      for (const fields of [{}, { host: "remote" }, { wsl_distro: "Ubuntu" }]) {
+        const res = await callStatePost(body(fields), {
+          ctx: { lookupCodexThread: () => Object.keys(fields).length ? absent : { available: false, found: false } },
+        });
+        assert.strictEqual(res.statusCode, 200);
+        assert.strictEqual(res.calls.updateSession[0][3].headless, false);
+      }
+    });
+
+    it("can show a real thread on later activity without retaining a hidden marker", async () => {
+      let record = absent;
+      const ctx = { lookupCodexThread: () => record };
+      const first = await callStatePost(body(), { ctx });
+      assert.strictEqual(first.statusCode, 204);
+      record = { available: true, found: true, source: "user" };
+      const next = await callStatePost(body(), { ctx });
+      assert.strictEqual(next.statusCode, 200);
+      assert.strictEqual(next.calls.updateSession[0][3].headless, false);
+    });
+  });
+
   it("enforces DSH upstream sequence order across created, event, and disposed callbacks", async () => {
     const fence = createDshStateSequenceFence();
     const post = (event, state, sequence = {}) => callStatePost(JSON.stringify({
