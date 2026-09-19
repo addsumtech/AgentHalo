@@ -158,13 +158,9 @@ const SCHEMA = {
   // upgrades. It stores only bounded aggregate/ticket data under ~/.clawd;
   // there is no network export and the user can disable or clear it later.
   recapEnabled: { type: "boolean", default: true },
-  // Default off (macOS): a fresh install runs as an accessory/agent app — pet +
-  // menu-bar icon, no Dock tile. Existing users keep their Dock — a persisted
-  // showDock is kept (save() bakes the full snapshot), and the v11->v12 migration
-  // backfills showDock=true for any pre-v12 file that lacks the key — so ONLY
-  // brand-new installs (which never run migrate) pick up this off default.
-  // showTray stays default-on so there is always one access point (menu bar).
-  showDock: { type: "boolean", default: false },
+  // Show the macOS Dock icon on fresh installs. Persisted visibility choices
+  // still win, so users who explicitly hid it keep that preference.
+  showDock: { type: "boolean", default: true },
   manageClaudeHooksAutomatically: { type: "boolean", default: true },
   autoStartWithClaude: { type: "boolean", default: false },
   // Fresh installs require an explicit opt-in before a local Codex
@@ -868,13 +864,8 @@ function migrate(raw) {
     }
     out.version = 11;
   }
-  // v11 -> v12: showDock now defaults OFF for FRESH INSTALLS ONLY (a new install
-  // runs as a menu-bar/pet accessory with no Dock tile). Existing files normally
-  // carry showDock explicitly (save() bakes the full snapshot), but a file from a
-  // pre-showDock build or hand-trimmed by the user lacks it — without this
-  // backfill validate() would hand those users the new off default and hide their
-  // Dock. Pin the old on-default for every pre-v12 file; fresh installs never run
-  // migrate().
+  // v11 -> v12 preserved the visible Dock for existing users when v12 changed
+  // the fresh-install default. Keep that migration and explicit false values.
   if (out.version < 12) {
     if (!("showDock" in out)) out.showDock = true;
     out.version = 12;

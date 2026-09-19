@@ -760,7 +760,8 @@ test("settings IPC opens the user themes directory", async () => {
   assert.deepStrictEqual(openCalls, ["C:\\Users\\Example\\AppData\\Roaming\\AgentHalo\\themes"]);
 });
 
-test("settings IPC imports AgentHalo user theme zip packages", async () => {
+for (const channel of ["settings:import-user-theme-zip", "settings:import-companion-zip"]) {
+test(`settings IPC imports AgentHalo packages through ${channel}`, async () => {
   const root = makeTempDir();
   try {
     const userThemesDir = path.join(root, "user-themes");
@@ -806,7 +807,7 @@ test("settings IPC imports AgentHalo user theme zip packages", async () => {
       },
     });
 
-    assert.deepStrictEqual(await ipcMain.invoke("settings:import-user-theme-zip"), {
+    assert.deepStrictEqual(await ipcMain.invoke(channel), {
       status: "ok",
       themeId: "pixel-cat",
       name: "Pixel Cat",
@@ -814,7 +815,7 @@ test("settings IPC imports AgentHalo user theme zip packages", async () => {
     });
     assert.deepStrictEqual(dialogParent, { id: "parent", sender: settingsWindow.webContents });
     assert.deepStrictEqual(dialogOptions.properties, ["openFile"]);
-    assert.deepStrictEqual(dialogOptions.filters, [{ name: "AgentHalo theme zip", extensions: ["zip"] }]);
+    assert.deepStrictEqual(dialogOptions.filters[0].extensions, ["zip"]);
     assert.strictEqual(
       fs.readFileSync(path.join(userThemesDir, "pixel-cat", "theme.json"), "utf8"),
       JSON.stringify(themeJson)
@@ -827,6 +828,7 @@ test("settings IPC imports AgentHalo user theme zip packages", async () => {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+}
 
 test("settings IPC copies sound overrides, removes stale siblings, and invalidates renderer cache", async () => {
   const root = makeTempDir();
@@ -1153,4 +1155,56 @@ test("settings IPC scan examines Codex locally and still withholds Claude", asyn
     runtime.dispose();
     fs.rmSync(homeDir, { recursive: true, force: true });
   }
+});
+
+
+test("unified companion picker detects Codex packages with one dialog and ignores renderer paths", async () => {
+  const root = makeTempDir();
+  try {
+    for (const manifest of ["pet.json", "companion/pet.json"]) {
+      const zipPath = path.join(root, "arbitrary-name.zip");
+      fs.writeFileSync(zipPath, makeZip([{ name: manifest, data: "{}" }]));
+      let picks = 0;
+      const importedPaths = [];
+      const { ipcMain } = createHarness({
+        dialog: { showOpenDialog: async () => { picks++; return { filePaths: [zipPath] }; } },
+        codexPetMain: { importCodexPetZipFile: async (file) => {
+          importedPaths.push(file);
+          return { status: "ok", themeId: "codex-pet-example" };
+        } },
+      });
+      assert.strictEqual((await ipcMain.invoke("settings:import-companion-zip", "/not-from-picker.zip")).status, "ok");
+      assert.strictEqual(picks, 1);
+      assert.deepStrictEqual(importedPaths, [zipPath]);
+    }
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
+});
+
+test("unified companion import cancels before reading a package", async () => {
+  const { ipcMain } = createHarness({ fs: { statSync: () => { throw new Error("must not read"); } } });
+  assert.deepStrictEqual(await ipcMain.invoke("settings:import-companion-zip"), { status: "cancel" });
+});
+
+test("unified companion import rejects corrupt, ambiguous and unsupported packages without importing", async () => {
+  const root = makeTempDir();
+  try {
+    for (const contents of [
+      Buffer.from("not a ZIP"),
+      makeZip([{ name: "readme.txt" }]),
+      makeZip([{ name: "one/pet.json" }, { name: "two/pet.json" }]),
+      makeZip([{ name: "theme.json" }, { name: "pet.json" }]),
+      makeZip([{ name: "too/deep/pet.json" }]),
+    ]) {
+      const zipPath = path.join(root, "invalid.zip");
+      fs.writeFileSync(zipPath, contents);
+      let imports = 0;
+      const { ipcMain } = createHarness({
+        dialog: { showOpenDialog: async () => ({ filePaths: [zipPath] }) },
+        codexPetMain: { importCodexPetZipFile: async () => { imports++; return { status: "ok" }; } },
+        themeLoader: { ensureUserThemesDir: () => { imports++; return root; } },
+      });
+      assert.strictEqual((await ipcMain.invoke("settings:import-companion-zip")).status, "error");
+      assert.strictEqual(imports, 0);
+    }
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });

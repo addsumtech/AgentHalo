@@ -503,3 +503,30 @@ test("Codex Pet import queue ignores overlapping flush calls while the first dra
   ]);
   assert.strictEqual(importCalls.length, 2);
 });
+
+
+test("a file chosen by the unified picker uses the existing Codex import and activation without another dialog", async () => {
+  const bytes = Buffer.from("selected archive");
+  const calls = [];
+  const { runtime } = createQueueRuntime({
+    dialog: { showOpenDialog: async () => { calls.push("unexpected picker"); return { canceled: true }; } },
+    runtimeOptions: { fs: { promises: {
+      stat: async (file) => { calls.push(file); return { size: bytes.length, isFile: () => true }; },
+      readFile: async () => bytes,
+    } } },
+    codexPetImporter: {
+      MAX_ZIP_BYTES: 1024,
+      importCodexPetFromZipBuffer: async (buffer, options) => {
+        assert.strictEqual(buffer, bytes);
+        assert.strictEqual(typeof options.confirmReplaceExistingPackage, "function");
+        return { packageDir: "/pets/example", packageInfo: { id: "example", displayName: "Example" } };
+      },
+    },
+    codexPetAdapter: { syncCodexPetThemes: () => ({ themes: [{ packageDir: "/pets/example", themeId: "codex-pet-example" }] }) },
+    settingsController: { applyCommand: async (...args) => { calls.push(args); return { status: "ok" }; } },
+  });
+  const result = await runtime.importCodexPetZipFile("/selected.zip");
+  assert.strictEqual(result.status, "ok");
+  assert.strictEqual(result.imported.displayName, "Example");
+  assert.deepStrictEqual(calls, ["/selected.zip", ["setThemeSelection", { themeId: "codex-pet-example" }]]);
+});

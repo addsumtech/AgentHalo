@@ -4068,7 +4068,10 @@ if (!gotTheLock) {
         setPetHidden: (hidden) => petWindowRuntime.setPetHidden(hidden),
       });
       macHideController.start();
-      app.on("activate", () => { if (macHideController) macHideController.onActivate(); });
+      app.on("activate", () => {
+        if (macHideController) macHideController.onActivate();
+        settingsWindowRuntime.open();
+      });
     }
     if (shouldOpenSettingsWindowFromArgv(process.argv)) {
       settingsWindowRuntime.open();

@@ -116,3 +116,10 @@ test("settings preload forwards Telegram status revisions and unsubscribe is exa
   forward({}, { channel: "telegram", revision: 8 });
   assert.equal(received.length, 1, "unsubscribe must remove only the registered callback");
 });
+
+
+test("unified companion import keeps file paths in the main process", async () => {
+  const { exposed, invokes } = loadPreload();
+  await exposed.get("settingsAPI").importCompanionZip("/renderer-path.zip");
+  assert.deepStrictEqual(invokes, [["settings:import-companion-zip"]]);
+});

@@ -1082,3 +1082,21 @@ test("Hermes WSL Unpair propagates warnings without disabling the global gate", 
   assert.strictEqual(result.commit, undefined);
   assert.strictEqual(snapshot.agents.hermes.enabled, true);
 });
+
+
+test("browser extension reveal reports clipboard and browser failures truthfully", () => {
+  let openedUrl;
+  const result = agentCommands.revealWebBridge({ browser: "edge" }, {
+    home: "/test/home",
+    fs: { existsSync: () => false },
+    writeClipboard: () => { throw new Error("clipboard unavailable"); },
+    openExtensionsPage: (url) => {
+      openedUrl = url;
+      return false;
+    },
+  });
+  assert.strictEqual(openedUrl, "edge://extensions");
+  assert.strictEqual(result.pathCopied, false);
+  assert.strictEqual(result.opened, false);
+  assert.ok(result.installDir.endsWith("/WebBridge/extension"));
+});

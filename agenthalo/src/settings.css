@@ -2442,24 +2442,10 @@ html, body {
 
 /* ── Theme grid ── */
 .theme-actions {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  align-items: start;
-  gap: 12px;
-  margin: -2px 0 14px;
-}
-.theme-action-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-}
-.theme-action-label {
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0;
-  text-transform: uppercase;
+  gap: 10px;
+  margin: 2px 0 10px;
 }
 .theme-action-buttons {
   display: flex;
@@ -5350,55 +5336,61 @@ html, body {
   .size-slider-row .volume-control, .text-scale-row .volume-control { min-width: 0; width: 100%; margin-left: 0; }
 }
 
-/* Explain browser setup before linking to the download instructions. */
-.web-bridge-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(160px, 0.65fr);
-  gap: 18px 24px;
-  padding: 22px;
-  margin-bottom: 24px;
-  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border));
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--accent) 5%, var(--panel-bg));
-}
-.web-bridge-content h2 { margin: 0 0 8px; font-size: 17px; font-weight: 600; }
-.web-bridge-description { margin: 0; color: var(--text-secondary); line-height: 1.6; }
-.web-bridge-sites { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
-.web-bridge-sites span { padding: 4px 9px; border: 1px solid var(--border); border-radius: 7px; background: var(--panel-bg); font-size: 13px; }
-.web-bridge-actions { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 9px; }
-.web-bridge-actions .web-bridge-download { white-space: normal; text-align: left; color: var(--accent); line-height: 1.5; padding: 9px 12px; }
-.web-bridge-actions p { margin: 0; color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
-/* This column is a fixed grid track, so a long localized label can still need a
-   second line. Balance the break rather than orphan a fragment onto it. */
-.web-bridge-actions .soft-btn { text-wrap: balance; }
-.web-bridge-steps { grid-column: 1 / -1; border-top: 1px solid var(--border); padding-top: 14px; margin: 0; color: var(--text-secondary); font-size: 13px; line-height: 1.7; }
-@media (max-width: 700px) {
-  .web-bridge-card { grid-template-columns: minmax(0, 1fr); padding: 18px; gap: 16px; }
-}
-
-.web-bridge-status { grid-column: 1 / -1; font-size: 13px; overflow-wrap: anywhere; }
+/* One installation entry point; setup and diagnostics expand on demand. */
+.web-bridge-card { padding: 20px 0; margin-bottom: 24px; border-block: 1px solid var(--row-border); }
+.web-bridge-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.web-bridge-content { min-width: 0; }
+.web-bridge-content h2 { margin: 0 0 6px; font-size: 14px; font-weight: 600; }
+.web-bridge-description { margin: 0; color: var(--text-secondary); font-size: 13px; line-height: 1.6; }
+.web-bridge-install { flex-shrink: 0; }
+.web-bridge-download { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; min-height: 34px; text-decoration: none; }
+.soft-btn.accent.web-bridge-download:hover { background: color-mix(in srgb, var(--accent) 88%, var(--text-primary)); border-color: var(--accent); }
+.web-bridge-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; margin-top: 10px; }
+.web-bridge-actions .settings-footer-link { padding: 3px 0; font-size: 12px; text-decoration: none; }
+.web-bridge-actions .settings-footer-link:hover { background: transparent; text-decoration: underline; }
+.web-bridge-setup-panel { margin-top: 16px; padding: 16px 18px; border-radius: 8px; background: color-mix(in srgb, var(--bg) 65%, var(--panel-bg)); }
+.web-bridge-requirements { margin: 0 0 14px; font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+.web-bridge-steps { margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.7; }
+.web-bridge-steps li + li { margin-top: 12px; }
+.web-bridge-steps li::marker { color: var(--text-secondary); }
+.web-bridge-prepare-actions { display: flex; align-items: center; gap: 8px; margin-top: 9px; flex-wrap: wrap; }
+.web-bridge-browser { min-width: 100px; padding: 8px 10px; font: inherit; color: var(--text-primary); background: var(--panel-bg); border: 1px solid var(--border); border-radius: 7px; }
+.web-bridge-path { display: block; margin-top: 8px; padding: 8px 10px; background: var(--panel-bg); border: 1px solid var(--row-border); border-radius: 6px; user-select: text; overflow-wrap: anywhere; }
+.web-bridge-status, .web-bridge-details { font-size: 12px; line-height: 1.65; overflow-wrap: anywhere; color: var(--text-secondary); }
 .web-bridge-status:empty { display: none; }
-.web-bridge-status p { margin: 5px 0; }
-
+.web-bridge-status p { margin: 8px 0 0; }
+.web-bridge-connection { margin: 12px 0 0; font-size: 13px; line-height: 1.6; }
+.web-bridge-connection[data-connection="connected"] { color: var(--accent-text, var(--accent)); }
+.web-bridge-details { margin-top: 8px; }
+.web-bridge-details-toggle { display: flex; align-items: center; gap: 5px; padding: 3px 0; font-size: 12px; }
+.web-bridge-chevron { width: 12px; height: 12px; transition: transform 150ms ease; }
+.web-bridge-details.expanded .web-bridge-chevron { transform: rotate(90deg); }
+.web-bridge-details p { margin: 8px 0 0; user-select: text; }
+.web-bridge-card [hidden] { display: none; }
+.web-bridge-card :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (max-width: 700px) {
+  .web-bridge-header { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .web-bridge-setup-panel { padding: 14px; }
+}
 
 /* Modern companion surfaces: quiet chrome, clear type, consistent controls. */
 .sidebar {
   width: 184px;
   padding: 28px 12px;
-  background: color-mix(in srgb, var(--sidebar-bg) 40%, var(--panel-bg));
+  background: color-mix(in srgb, var(--sidebar-bg) 25%, var(--panel-bg));
   border-right-color: var(--row-border);
 }
 .sidebar-brand { padding: 0 10px 26px; font-size: 17px; gap: 9px; }
 .sidebar-brand img { width: 28px; height: 28px; }
 .sidebar-item { min-height: 42px; padding: 10px 12px; margin: 4px 0; font-weight: 500; }
-.sidebar-item.active { background: color-mix(in srgb, var(--accent) 10%, var(--panel-bg)); color: var(--accent-text, var(--accent)); }
+.sidebar-item.active { background: var(--sidebar-hover); color: var(--text-primary); }
 .sidebar-item-icon { width: 17px; height: 17px; }
-.content { min-width: 0; padding: 36px 32px 32px; background: color-mix(in srgb, var(--bg) 45%, var(--panel-bg)); }
-.content h1 { font-size: 26px; font-weight: 600; letter-spacing: -.7px; margin-bottom: 8px; }
-.content .subtitle { font-size: 14px; line-height: 1.65; margin-bottom: 28px; }
+.content { min-width: 0; padding: 32px 32px 28px; background: var(--panel-bg); }
+.content h1 { font-size: 23px; font-weight: 600; letter-spacing: -.4px; margin-bottom: 8px; }
+.content .subtitle { font-size: 13px; line-height: 1.65; margin-bottom: 24px; }
 .section { margin-bottom: 26px; }
 .section-title, .theme-section-title { font-size: 13px; font-weight: 550; letter-spacing: 0; text-transform: none; color: var(--text-secondary); padding-left: 2px; margin-bottom: 10px; }
-.section-rows { background: var(--panel-bg); border-color: var(--row-border); border-radius: 14px; }
+.section-rows { background: var(--panel-bg); border-color: var(--row-border); border-radius: 9px; }
 /* A row with a description is two lines tall, one without is a single line, so
    a card mixing both used to look lumpy. A floor height lets the short rows
    breathe and narrows the gap without padding the tall ones out of proportion. */
@@ -5409,7 +5401,7 @@ html, body {
 .row-desc { font-size: 13px; line-height: 1.6; margin-top: 3px; }
 .collapsible-group-header { padding: 15px 18px; }
 .collapsible-group-header-with-action { padding: 0; }
-.soft-btn { border-radius: 9px; padding: 8px 12px; font-size: 13px; font-weight: 500; box-shadow: none; background: var(--panel-bg); transition: background 120ms ease, border-color 120ms ease; }
+.soft-btn { border-radius: 7px; padding: 7px 11px; font-size: 13px; font-weight: 500; box-shadow: none; background: var(--panel-bg); transition: background 120ms ease, border-color 120ms ease; }
 .soft-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 6%, var(--panel-bg)); border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); }
 .soft-btn.accent { background: var(--accent); color: var(--accent-contrast, white); }
 .soft-btn.quiet { background: transparent; }
@@ -5423,15 +5415,11 @@ html, body {
 .ui-color-theme-picker.segmented button { border-radius: 9px; font-size: 13px; padding: 8px 10px; }
 .ui-color-theme-picker.segmented button.active { box-shadow: none; background: color-mix(in srgb, var(--preview-accent) 7%, var(--panel-bg)); }
 .theme-grid { grid-template-columns: repeat(auto-fill, minmax(156px, 1fr)); gap: 14px; }
-.theme-card { border-radius: 16px; padding: 10px; gap: 10px; background: var(--panel-bg); border-color: var(--row-border); }
-.theme-card:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0, 0, 0, .04); }
+.theme-card { border-radius: 10px; padding: 10px; gap: 10px; background: var(--panel-bg); border-color: var(--row-border); }
+.theme-card:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); transform: none; box-shadow: none; }
 .theme-card.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .theme-thumb { border-radius: 10px; background: color-mix(in srgb, var(--bg) 60%, var(--panel-bg)); }
 .theme-card.active .theme-thumb { background: color-mix(in srgb, var(--accent) 7%, var(--panel-bg)); }
-.web-bridge-card { border-color: var(--row-border); background: var(--panel-bg); padding: 22px; }
-.web-bridge-sites span { border: 0; background: var(--bg); border-radius: 6px; }
-.web-bridge-content h2 { font-size: 16px; }
-.web-bridge-steps { border-top-color: var(--row-border); }
 .about-hero { padding-top: 12px; padding-bottom: 30px; }
 .about-app-icon { width: 96px; height: 96px; }
 .about-title { font-size: 29px; font-weight: 600; letter-spacing: -.8px; }
@@ -5447,7 +5435,7 @@ a.about-info-value:hover { color: var(--accent-text, var(--accent)); }
   .sidebar-brand img { width: 24px; height: 24px; }
   .sidebar-item { gap: 8px; padding: 10px; }
   .content { padding: 28px 22px; }
-  .content h1 { font-size: 24px; }
+  .content h1 { font-size: 22px; }
   .theme-grid { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -775,8 +775,7 @@ describe("applyUpdate", () => {
   it("allows both visibility preferences to be disabled sequentially", async () => {
     const ctrl = createSettingsController({
       prefsPath: makeTempPath(),
-      // Seed both on explicitly — this guards the cross-field constraint, not
-      // the showDock default (which is off for fresh installs).
+      // Seed both on explicitly so this test is independent of defaults.
       loadResult: { snapshot: { ...prefs.getDefaults(), showTray: true, showDock: true }, locked: false },
     });
     // Both seeded on; turning one off is allowed
@@ -863,7 +862,7 @@ describe("applyBulk", () => {
   it("allows bulk with only one of showTray/showDock set to false", async () => {
     const ctrl = createSettingsController({
       prefsPath: makeTempPath(),
-      // Seed both on explicitly (showDock now defaults off for fresh installs).
+      // Seed both on explicitly so this test is independent of defaults.
       loadResult: { snapshot: { ...prefs.getDefaults(), showTray: true, showDock: true }, locked: false },
     });
     const r = await ctrl.applyBulk({ showTray: false });

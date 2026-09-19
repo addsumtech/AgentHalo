@@ -671,10 +671,14 @@ function createCodexPetMain(options = {}) {
     if (!picked || picked.canceled || !Array.isArray(picked.filePaths) || !picked.filePaths[0]) {
       return { status: "cancel" };
     }
+    return importCodexPetZipFile(picked.filePaths[0]);
+  }
 
+  // Main-process callers may reuse a file chosen by the unified import picker.
+  async function importCodexPetZipFile(zipPath) {
     try {
-      const zipPath = picked.filePaths[0];
       const stat = await fs.promises.stat(zipPath);
+      if (!stat.isFile()) throw new Error("selected pet package is not a file");
       if (stat.size > codexPetImporter.MAX_ZIP_BYTES) {
         throw new Error(`zip package exceeds ${codexPetImporter.MAX_ZIP_BYTES} bytes`);
       }
@@ -767,6 +771,7 @@ function createCodexPetMain(options = {}) {
     flushPendingImportUrls,
     getLastSyncSummary: () => lastSyncSummary,
     importCodexPetZip,
+    importCodexPetZipFile,
     isManagedTheme: (themeId) => !!readManagedThemeMarker(themeId),
     mergeSyncSummaries: mergeCodexPetSyncSummaries,
     openCodexPetsDir,

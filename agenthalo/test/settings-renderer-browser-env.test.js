@@ -1584,6 +1584,8 @@ function loadAgentsTabForTest({
     ClawdSettingsI18n: {
       STRINGS: {
         en: {
+          ...Object.fromEntries(Object.entries(loadSettingsI18nForTest().en)
+            .filter(([key]) => key.startsWith("webBridge"))),
           agentsTitle: "Agents",
           agentsSubtitle: "subtitle",
           agentsEmpty: "empty",
@@ -11064,7 +11066,7 @@ describe("settings renderer browser environment", () => {
     assert.ok(/function closeModal\(\) \{\s*disposeDoctorDisclosures\(\);/.test(doctorSource));
   });
 
-  it("groups Theme cards and exposes theme import actions in Settings", () => {
+  it("groups Theme cards and exposes one character import action in Settings", () => {
     const tabSource = fs.readFileSync(path.join(SRC_DIR, "settings-tab-theme.js"), "utf8");
     const generalSource = fs.readFileSync(SETTINGS_TAB_GENERAL, "utf8");
     const preloadSource = fs.readFileSync(PRELOAD_SETTINGS, "utf8");
@@ -11077,8 +11079,9 @@ describe("settings renderer browser environment", () => {
     assert.ok(tabSource.includes("themeGroupBuiltIn"));
     assert.ok(tabSource.includes("themeGroupImportedCodexPets"));
     assert.ok(tabSource.includes("themeGroupUserThemes"));
-    assert.ok(tabSource.includes("handleImportCodexPetZip"));
-    assert.ok(tabSource.includes("handleImportUserThemeZip"));
+    assert.ok(tabSource.includes("handleImportCompanionZip"));
+    assert.ok(!tabSource.includes("handleImportCodexPetZip"));
+    assert.ok(!tabSource.includes("handleImportUserThemeZip"));
     assert.ok(!tabSource.includes("themeOpenCodexPetsFolder"));
     assert.ok(!tabSource.includes("handleOpenCodexPetsFolder"));
     assert.ok(tabSource.includes("handleOpenUserThemesFolder"));
@@ -11107,7 +11110,6 @@ describe("settings renderer browser environment", () => {
     assert.ok(settingsIpcSource.includes('handle("settings:import-codex-pet-zip"'));
     assert.ok(settingsIpcSource.includes('handle("settings:remove-codex-pet"'));
     assert.ok(css.includes(".theme-section-title"));
-    assert.ok(css.includes(".theme-action-group"));
     assert.ok(css.includes(".theme-action-buttons"));
     assert.ok(css.includes(".theme-uninstall-btn"));
     assert.ok(css.includes(".theme-customize-btn"));
@@ -16239,5 +16241,127 @@ describe("macOS platform detection (Settings shortcut labels)", () => {
     assert.strictEqual(isMac(""), false);
     assert.strictEqual(isMac(undefined), false);
     assert.strictEqual(isMac(null), false);
+  });
+});
+
+
+describe("browser extension setup", () => {
+  function render(settingsAPI = {}) {
+    const harness = loadAgentsTabForTest({ settingsAPI });
+    harness.core.ops.requestRender({ content: true });
+    return harness;
+  }
+
+  it("opens guidance without preparing files and downloads the public ZIP directly", async () => {
+    const calls = [];
+    const harness = render({
+      command: (...args) => { calls.push(args); return Promise.resolve({ status: "ok" }); },
+      openExternal: (url) => { calls.push(url); return Promise.resolve(); },
+    });
+    const setup = harness.content.querySelector(".web-bridge-setup");
+    assert.strictEqual(setup.getAttribute("aria-hidden"), "true");
+    harness.content.querySelector(".web-bridge-install").click();
+    assert.strictEqual(setup.getAttribute("aria-hidden"), "false");
+    assert.strictEqual(harness.content.querySelector(".web-bridge-install").getAttribute("aria-expanded"), "true");
+    assert.deepStrictEqual(calls, []);
+    await harness.content.querySelector(".web-bridge-download").eventListeners.click[0]({ preventDefault() {} });
+    assert.deepStrictEqual(calls, ["https://github.com/addsumtech/AgentHalo/releases/download/web-bridge-v0.3.3/AgentHalo-Web-Bridge.zip"]);
+  });
+
+  it("prepares before opening the chosen browser and survives a preference rerender", async () => {
+    const calls = [];
+    const pending = createDeferred();
+    const harness = render({ command: (name, payload) => {
+      calls.push({ name, payload });
+      return name === "prepareWebBridge" ? pending.promise
+        : Promise.resolve({ status: "ok", pathCopied: true, opened: true });
+    } });
+    harness.content.querySelector(".web-bridge-install").click();
+    const browser = harness.content.querySelector(".web-bridge-browser");
+    browser.value = "edge";
+    browser.dispatchEvent({ type: "change" });
+    const action = harness.content.querySelector(".web-bridge-prepare").eventListeners.click[0]();
+    harness.core.ops.requestRender({ content: true });
+    assert.strictEqual(harness.content.querySelector(".web-bridge-prepare").disabled, true);
+    assert.strictEqual(harness.content.querySelector(".web-bridge-setup").getAttribute("aria-hidden"), "false");
+    assert.strictEqual(harness.content.querySelector(".web-bridge-browser").value, "edge");
+    assert.deepStrictEqual(calls.map((call) => call.name), ["prepareWebBridge"]);
+    pending.resolve({ status: "ok", installDir: "/test/extension" });
+    await action;
+    assert.deepStrictEqual(calls.map((call) => call.name), ["prepareWebBridge", "revealWebBridge"]);
+    assert.strictEqual(calls[1].payload.browser, "edge");
+    assert.strictEqual(harness.content.querySelector(".web-bridge-path").textContent, "/test/extension");
+    assert.match(collectText(harness.content.querySelector(".web-bridge-status")), /path copied/);
+    assert.strictEqual(harness.content.querySelector(".web-bridge-connection"), null);
+  });
+
+  it("shows manual recovery when opening or copying fails, without claiming success", async () => {
+    const harness = render({ command: (name) => Promise.resolve(name === "prepareWebBridge"
+      ? { status: "ok", installDir: "/test/extension" }
+      : { status: "ok", pathCopied: false, opened: false }) });
+    await harness.content.querySelector(".web-bridge-prepare").eventListeners.click[0]();
+    const message = collectText(harness.content.querySelector(".web-bridge-status"));
+    assert.match(message, /Copy the folder path below manually/);
+    assert.match(message, /chrome:\/\/extensions/);
+    assert.doesNotMatch(message, /path copied/);
+  });
+
+  it("does not open the browser after preparation fails", async () => {
+    const calls = [];
+    const harness = render({ command: (name) => {
+      calls.push(name);
+      return Promise.resolve({ status: "error" });
+    } });
+    await harness.content.querySelector(".web-bridge-prepare").eventListeners.click[0]();
+    assert.deepStrictEqual(calls, ["prepareWebBridge"]);
+    assert.match(collectText(harness.content.querySelector(".web-bridge-status")), /Could not prepare/);
+    assert.strictEqual(harness.content.querySelector(".web-bridge-prepare").disabled, false);
+  });
+
+  it("checks only on request, keeps diagnostics collapsed, and distinguishes loaded from connected", async () => {
+    let checks = 0;
+    const harness = render({ checkWebBridgeStatus: () => {
+      checks++;
+      return Promise.resolve({
+        connection: "browser", latestVersion: "0.3.3", installDir: "/test/extension",
+        installations: [{ browser: "Chrome", profile: "Default", status: "installed", version: "0.3.3" }],
+      });
+    } });
+    assert.strictEqual(checks, 0);
+    await harness.content.querySelector(".web-bridge-check").eventListeners.click[0]();
+    assert.strictEqual(checks, 1);
+    assert.match(collectText(harness.content.querySelector(".web-bridge-connection")), /Extension installed\. Start a conversation on an AI website\./);
+    const details = harness.content.querySelector(".web-bridge-details");
+    assert.strictEqual(details.querySelector(".web-bridge-details-toggle").getAttribute("aria-expanded"), "false");
+    assert.match(collectText(details), /Chrome.*0.3.3/);
+    harness.core.ops.requestRender({ content: true });
+    assert.strictEqual(checks, 1);
+    assert.ok(harness.content.querySelector(".web-bridge-connection"));
+  });
+});
+
+
+describe("unified companion import", () => {
+  it("places one format-neutral import below the characters and resets after cancellation", async () => {
+    let imports = 0;
+    const picked = createDeferred();
+    const harness = loadThemeTabForTest({
+      themes: [{ id: "current", name: "Current", builtin: true, active: true }],
+      settingsAPI: { importCompanionZip: () => { imports++; return picked.promise; } },
+    });
+    const content = harness.content;
+    const group = content.children[content.children.length - 1];
+    assert.strictEqual(group.dataset.groupId, "theme:imports");
+    assert.strictEqual(content.querySelectorAll(".theme-import-companion").length, 1);
+    assert.ok(collectText(group).includes("Import character package (.zip)"));
+    assert.ok(!collectText(group).includes("Import Codex Pet package"));
+    const importing = content.querySelector(".theme-import-companion").eventListeners.click[0]();
+    assert.strictEqual(imports, 1);
+    assert.strictEqual(content.querySelector(".theme-import-companion").disabled, true);
+    picked.resolve({ status: "cancel" });
+    await importing;
+    assert.strictEqual(content.querySelector(".theme-import-companion").disabled, false);
+    assert.strictEqual(content.querySelectorAll(".theme-card").length, 1);
+    assert.deepStrictEqual(harness.commands, []);
   });
 });

@@ -76,166 +76,204 @@
   }
 
   function buildWebBridgeCard() {
-    const card = document.createElement("section");
-    card.className = "web-bridge-card";
+    // Keep setup progress across preference broadcasts and tab changes. Checking
+    // for a public release remains an explicit action, never a render side effect.
+    const ui = runtime.webBridgeUi ||= {
+      setupOpen: false, browser: "chrome", pending: false, report: null,
+      installDir: "", notice: [], detailsOpen: false,
+    };
+    function element(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text) node.textContent = text;
+      return node;
+    }
+    function button(className, key) {
+      const node = element("button", className, t(key));
+      node.type = "button";
+      node.setAttribute("data-settings-focus-key", key);
+      return node;
+    }
+    const card = element("section", "web-bridge-card");
     card.setAttribute("aria-label", t("webBridgeTitle"));
-    const content = document.createElement("div");
-    content.className = "web-bridge-content";
-    const title = document.createElement("h2");
-    title.textContent = t("webBridgeTitle");
-    const description = document.createElement("p");
-    description.className = "web-bridge-description";
-    description.textContent = t("webBridgeDescription");
-    const sites = document.createElement("div");
-    sites.className = "web-bridge-sites";
-    for (const name of ["Claude", "ChatGPT", "Gemini"]) {
-      const badge = document.createElement("span");
-      badge.textContent = name;
-      sites.appendChild(badge);
-    }
-    content.appendChild(title);
-    content.appendChild(description);
-    content.appendChild(sites);
-    const actions = document.createElement("div");
-    actions.className = "web-bridge-actions";
-    const addToChrome = document.createElement("button");
-    addToChrome.type = "button";
-    addToChrome.className = "soft-btn accent web-bridge-add-to-chrome";
-    addToChrome.textContent = t("webBridgeAddToChrome");
-    const prepare = document.createElement("button");
-    prepare.type = "button";
-    prepare.className = "soft-btn web-bridge-prepare";
-    prepare.textContent = t("webBridgePrepare");
-    // Chrome Web Store is the primary path once the listing is live. Until then
-    // the unpacked flow stays primary so the card is never a dead end.
-    function syncStoreButton() {
-      const storeUrl = runtime.webBridgeStoreUrl || "";
-      addToChrome.hidden = !storeUrl;
-      prepare.className = storeUrl ? "soft-btn web-bridge-prepare" : "soft-btn accent web-bridge-prepare";
-    }
-    syncStoreButton();
-    const openExtensions = document.createElement("button");
-    openExtensions.type = "button";
-    openExtensions.className = "soft-btn web-bridge-open-extensions";
-    openExtensions.textContent = t("webBridgeOpenExtensions");
-    const requirements = document.createElement("p");
-    requirements.textContent = t("webBridgeRequirements");
-    actions.appendChild(addToChrome);
-    actions.appendChild(prepare);
-    actions.appendChild(openExtensions);
-    actions.appendChild(requirements);
-    const steps = document.createElement("p");
-    steps.className = "web-bridge-steps";
-    steps.textContent = t("webBridgeSteps");
-    card.appendChild(content);
-    card.appendChild(actions);
-    card.appendChild(steps);
-    const check = document.createElement("button");
-    check.type = "button";
-    check.className = "soft-btn";
-    check.textContent = t("webBridgeCheck");
+    const header = element("div", "web-bridge-header");
+    const content = element("div", "web-bridge-content");
+    content.appendChild(element("h2", "", t("webBridgeTitle")));
+    content.appendChild(element("p", "web-bridge-description", t("webBridgeDescription")));
+    header.appendChild(content);
+    const download = element("a", "soft-btn accent web-bridge-download", t("webBridgeDownload"));
+    download.href = t("webBridgeDownloadUrl");
+    download.addEventListener("click", async (event) => {
+      event.preventDefault();
+      try {
+        await window.settingsAPI.openExternal(download.href);
+      } catch {
+        ui.notice = ["webBridgeOpenFailed"];
+        ops.requestRender({ content: true, preserveScroll: true });
+      }
+    });
+    header.appendChild(download);
+    card.appendChild(header);
+
+    const actions = element("div", "web-bridge-actions");
+    const install = button("soft-btn web-bridge-install", runtime.webBridgeStoreUrl ? "webBridgeAddToChrome" : "webBridgeInstall");
+    const check = button("settings-footer-link web-bridge-check", "webBridgeCheck");
+    actions.appendChild(install);
     actions.appendChild(check);
-    const result = document.createElement("div");
-    result.className = "web-bridge-status";
-    result.setAttribute("role", "status");
-    result.setAttribute("aria-live", "polite");
-    card.appendChild(result);
-    async function runPrepare() {
-      prepare.disabled = true;
-      result.textContent = t("webBridgeChecking");
-      try {
-        const response = await window.settingsAPI.command("prepareWebBridge");
-        if (!response || response.status !== "ok") {
-          throw new Error((response && response.message) || t("webBridgePrepareFailed"));
-        }
-        result.textContent = "";
-        addStatusLine(result, t("webBridgePrepared"));
-        if (response.installDir) addStatusLine(result, response.installDir);
-        addStatusLine(result, t("webBridgeExtensionsHint"));
-        await window.settingsAPI.command("revealWebBridge");
-      } catch {
-        result.textContent = t("webBridgePrepareFailed");
-      } finally {
-        prepare.disabled = false;
-      }
-    }
+    card.appendChild(actions);
 
-    async function runReveal() {
-      openExtensions.disabled = true;
-      try {
-        const response = await window.settingsAPI.command("revealWebBridge");
-        result.textContent = "";
-        if (response && response.installDir) addStatusLine(result, response.installDir);
-        addStatusLine(result, t("webBridgePathCopied"));
-        addStatusLine(result, t("webBridgeExtensionsHint"));
-      } catch {
-        result.textContent = t("webBridgeCheckFailed");
-      } finally {
-        openExtensions.disabled = false;
-      }
+    const setup = element("div", "web-bridge-setup");
+    const setupInner = element("div", "settings-disclosure-body-inner");
+    const setupPanel = element("div", "web-bridge-setup-panel");
+    setupPanel.appendChild(element("p", "web-bridge-requirements", t("webBridgeRequirements")));
+    const steps = element("ol", "web-bridge-steps");
+    const first = element("li", "", t("webBridgeStepPrepare"));
+    const prepareActions = element("div", "web-bridge-prepare-actions");
+    const browser = element("select", "web-bridge-browser");
+    browser.setAttribute("aria-label", t("webBridgeBrowser"));
+    for (const [value, label] of [["chrome", "Chrome"], ["edge", "Edge"]]) {
+      const option = element("option", "", label);
+      option.value = value;
+      option.selected = value === ui.browser;
+      browser.appendChild(option);
     }
-
-    function addStatusLine(target, text) {
-      const line = document.createElement("p");
-      line.textContent = text;
-      target.appendChild(line);
+    browser.value = ui.browser;
+    browser.addEventListener("change", () => { ui.browser = browser.value; });
+    const prepare = button("soft-btn accent web-bridge-prepare", "webBridgePrepare");
+    prepareActions.appendChild(browser);
+    prepareActions.appendChild(prepare);
+    first.appendChild(prepareActions);
+    steps.appendChild(first);
+    steps.appendChild(element("li", "", t("webBridgeStepLoad")));
+    const last = element("li", "", t("webBridgeStepFinish"));
+    if (ui.installDir) last.appendChild(element("code", "web-bridge-path", ui.installDir));
+    steps.appendChild(last);
+    setupPanel.appendChild(steps);
+    setupInner.appendChild(setupPanel);
+    setup.appendChild(setupInner);
+    card.appendChild(setup);
+    if (!runtime.webBridgeStoreUrl) {
+      helpers.registerMountedDisposable(helpers.attachSettingsDisclosure({
+        root: card, trigger: install, body: setup, expanded: ui.setupOpen,
+        onExpandedChange: (expanded) => { ui.setupOpen = expanded; },
+      }));
+    } else {
+      setup.hidden = true;
     }
 
     function connectionLine(report) {
       if (report.connection === "connected") return t("webBridgeConnected");
-      if (report.connection === "browser") return t("webBridgeInstalled");
+      if (report.connection === "browser") return t("webBridgeWaiting");
       if (report.connection === "disabled") return t("webBridgeDisabled");
       if (report.connection === "prepared") return t("webBridgeNotInBrowser");
       if (report.connection === "registered") return t("webBridgeRegistered");
       if (report.filesReady) return t("webBridgeFilesReady");
-      return t("webBridgeNotDetected");
+      return t(report.unreadable ? "webBridgeUnreadable" : "webBridgeNotDetected");
+    }
+    const result = element("div", "web-bridge-status");
+    result.setAttribute("role", "status");
+    result.setAttribute("aria-live", "polite");
+    function syncPending() {
+      check.disabled = prepare.disabled = browser.disabled = ui.pending;
+      result.textContent = "";
+      for (const key of ui.notice) result.appendChild(element("p", "", t(key)));
+    }
+    syncPending();
+    card.appendChild(result);
+    if (ui.report) {
+      const report = ui.report;
+      const summary = element("p", "web-bridge-connection", connectionLine(report));
+      summary.dataset.connection = report.connection || "unknown";
+      card.appendChild(summary);
+      const details = element("div", "web-bridge-details");
+      const detailsTrigger = button("settings-footer-link web-bridge-details-toggle", "webBridgeDetails");
+      detailsTrigger.appendChild(helpers.createDisclosureChevron("web-bridge-chevron"));
+      const detailsBody = element("div", "");
+      const detailsInner = element("div", "settings-disclosure-body-inner");
+      detailsBody.appendChild(detailsInner);
+      details.appendChild(detailsTrigger);
+      details.appendChild(detailsBody);
+      const addLine = (text) => detailsInner.appendChild(element("p", "", text));
+      if (report.installDir) addLine(report.installDir);
+      const hasActiveInstallation = (item) => report.installations.some((other) =>
+        other.browser === item.browser && other.profile === item.profile && other.status === "installed");
+      const oldRecords = report.installations.filter((item) =>
+        item.status === "missing-files" && hasActiveInstallation(item));
+      for (const item of report.installations.filter((item) => !oldRecords.includes(item))) {
+        const status = item.status === "unreadable" ? "webBridgeFilesUnreadable"
+          : item.status === "missing-files" ? "webBridgeMissingFiles"
+          : item.status === "disabled" ? "webBridgeDisabled" : "webBridgeInstalled";
+        const versions = item.version && report.latestVersion
+          ? item.version.split(".").map(Number).reduce((comparison, value, index) => comparison || Math.sign(value - Number(report.latestVersion.split(".")[index])), 0)
+          : null;
+        const update = versions === null ? "" : ` · ${t(versions < 0 ? "webBridgeUpdateAvailable" : versions > 0 ? "webBridgeNewer" : "webBridgeUpToDate")}`;
+        addLine(`${item.browser} · ${item.profile} · ${t(status)}${item.version ? ` v${item.version}` : ""}${update}`);
+      }
+      if (report.unreadable) addLine(t("webBridgeUnreadable"));
+      addLine(report.latestVersion ? `${t("webBridgeLatest")} v${report.latestVersion}` : t("webBridgeLatestUnavailable"));
+      addLine(t("webBridgeCheckHint"));
+      card.appendChild(details);
+      helpers.registerMountedDisposable(helpers.attachSettingsDisclosure({
+        root: details, trigger: detailsTrigger, body: detailsBody, expanded: ui.detailsOpen,
+        onExpandedChange: (expanded) => { ui.detailsOpen = expanded; },
+      }));
     }
 
-    addToChrome.addEventListener("click", () => {
-      const storeUrl = runtime.webBridgeStoreUrl || "";
-      if (!storeUrl) return;
-      result.textContent = "";
-      addStatusLine(result, t("webBridgeStoreHint"));
-      if (window.settingsAPI && typeof window.settingsAPI.openExternal === "function") {
-        window.settingsAPI.openExternal(storeUrl);
+    install.addEventListener("click", async () => {
+      if (runtime.webBridgeStoreUrl) {
+        try {
+          await window.settingsAPI.openExternal(runtime.webBridgeStoreUrl);
+          ui.notice = ["webBridgeStoreHint"];
+        } catch {
+          ui.notice = ["webBridgeOpenFailed"];
+        }
+        syncPending();
+        return;
       }
     });
-    prepare.addEventListener("click", () => { void runPrepare(); });
-    openExtensions.addEventListener("click", () => { void runReveal(); });
+    prepare.addEventListener("click", async () => {
+      if (ui.pending) return;
+      ui.pending = true;
+      ui.notice = ["webBridgePreparing"];
+      syncPending();
+      try {
+        const response = await window.settingsAPI.command("prepareWebBridge");
+        if (!response || response.status !== "ok") throw new Error("prepare failed");
+        ui.installDir = response.installDir || "";
+        ui.report = null;
+        // Preparing files does not mean the browser has loaded the extension.
+        ui.notice = ["webBridgePrepared"];
+        try {
+          const revealed = await window.settingsAPI.command("revealWebBridge", { browser: ui.browser });
+          ui.notice.push(revealed && revealed.pathCopied ? "webBridgePathCopied" : "webBridgeCopyManually");
+          if (!revealed || !revealed.opened) ui.notice.push("webBridgeOpenManually");
+        } catch {
+          ui.notice.push("webBridgeCopyManually", "webBridgeOpenManually");
+        }
+      } catch {
+        ui.notice = ["webBridgePrepareFailed"];
+      } finally {
+        ui.pending = false;
+        if (state.activeTab === "agents") ops.requestRender({ content: true, preserveScroll: true });
+      }
+    });
     check.addEventListener("click", async () => {
-      check.disabled = true;
-      result.textContent = t("webBridgeChecking");
+      if (ui.pending) return;
+      ui.pending = true;
+      ui.notice = ["webBridgeChecking"];
+      syncPending();
       try {
         const report = await window.settingsAPI.checkWebBridgeStatus();
         if (!report || !Array.isArray(report.installations)) throw new Error("invalid report");
         runtime.webBridgeStoreUrl = report.storeUrl || "";
-        syncStoreButton();
-        result.textContent = "";
-        const addLine = (text) => addStatusLine(result, text);
-        addLine(connectionLine(report));
-        if (report.installDir) addLine(report.installDir);
-        const hasActiveInstallation = (item) => report.installations.some((other) =>
-          other.browser === item.browser && other.profile === item.profile && other.status === "installed");
-        const oldRecords = report.installations.filter((item) =>
-          item.status === "missing-files" && hasActiveInstallation(item));
-        for (const item of report.installations.filter((item) => !oldRecords.includes(item))) {
-          const status = item.status === "unreadable" ? "webBridgeFilesUnreadable"
-            : item.status === "missing-files" ? "webBridgeMissingFiles"
-            : item.status === "disabled" ? "webBridgeDisabled" : "webBridgeInstalled";
-          const versions = item.version && report.latestVersion
-            ? item.version.split(".").map(Number).reduce((comparison, value, index) => comparison || Math.sign(value - Number(report.latestVersion.split(".")[index])), 0)
-            : null;
-          const update = versions === null ? "" : ` · ${t(versions < 0 ? "webBridgeUpdateAvailable" : versions > 0 ? "webBridgeNewer" : "webBridgeUpToDate")}`;
-          addLine(`${item.browser} · ${item.profile} · ${t(status)}${item.version ? ` v${item.version}` : ""}${update}`);
-        }
-        if (!report.installations.length && !report.unreadable) addLine(t("webBridgeNotDetected"));
-        addLine(report.latestVersion ? `${t("webBridgeLatest")} v${report.latestVersion}` : t("webBridgeLatestUnavailable"));
-        addLine(t("webBridgeCheckHint"));
-        addLine(t("webBridgeExtensionsHint"));
+        ui.report = report;
+        ui.notice = [];
       } catch {
-        result.textContent = t("webBridgeCheckFailed");
+        ui.report = null;
+        ui.notice = ["webBridgeCheckFailed"];
       } finally {
-        check.disabled = false;
+        ui.pending = false;
+        if (state.activeTab === "agents") ops.requestRender({ content: true, preserveScroll: true });
       }
     });
     return card;

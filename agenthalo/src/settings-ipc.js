@@ -744,6 +744,36 @@ function registerSettingsIpc(options = {}) {
     }
   });
 
+  handle("settings:import-companion-zip", async (event) => {
+    try {
+      const labels = {
+        en: "Import character package", zh: "导入角色包", "zh-TW": "匯入角色包",
+        ko: "캐릭터 패키지 가져오기", ja: "キャラクターパッケージをインポート",
+        "pt-BR": "Importar pacote de personagem", es: "Importar paquete de personaje",
+      };
+      const picked = await dialog.showOpenDialog(getDialogParent(event), {
+        title: labels[getLang()] || labels.en,
+        properties: ["openFile"],
+        filters: [{ name: "ZIP", extensions: ["zip"] }],
+      });
+      if (!picked || picked.canceled || !picked.filePaths || !picked.filePaths[0]) {
+        return { status: "cancel" };
+      }
+      // Only the native picker supplies paths; the renderer cannot pass one.
+      const zipPath = picked.filePaths[0];
+      if (settingsThemeImporter.detectCompanionZipFormat(zipPath, { fs }) === "codex-pet") {
+        return await codexPetMain.importCodexPetZipFile(zipPath);
+      }
+      return settingsThemeImporter.importUserThemeZip(zipPath, {
+        fs, path,
+        userThemesDir: typeof themeLoader.ensureUserThemesDir === "function"
+          ? themeLoader.ensureUserThemesDir() : null,
+      });
+    } catch (err) {
+      return { status: "error", message: (err && err.message) || String(err) };
+    }
+  });
+
   handle("settings:refresh-codex-pets", () => codexPetMain.refreshFromSettings());
   handle("settings:open-codex-pets-dir", () => codexPetMain.openCodexPetsDir());
   handle("settings:import-codex-pet-zip", (event) => codexPetMain.importCodexPetZip(event));

@@ -889,8 +889,12 @@ function revealWebBridge(payload, deps = {}) {
     home,
   });
   const installDir = inspected.installDir || webBridgeInstallDir(home, pathApi);
+  let pathCopied = false;
   if (typeof deps.writeClipboard === "function") {
-    try { deps.writeClipboard(installDir); } catch { /* keep going */ }
+    try {
+      deps.writeClipboard(installDir);
+      pathCopied = true;
+    } catch { /* The UI can still show the path for manual copying. */ }
   }
   const url = extensionsPageUrl(payload && payload.browser);
   let opened = false;
@@ -906,7 +910,7 @@ function revealWebBridge(payload, deps = {}) {
     status: "ok",
     installDir,
     filesReady: inspected.filesReady === true,
-    pathCopied: typeof deps.writeClipboard === "function",
+    pathCopied,
     opened,
     extensionsUrl: url,
   };

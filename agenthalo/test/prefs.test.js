@@ -1398,7 +1398,7 @@ describe("prefs.migrate v10 → v11 (on-demand agent integrations)", () => {
   });
 });
 
-describe("prefs.migrate v11 → v12 (showDock default off for fresh installs)", () => {
+describe("prefs Dock visibility defaults and v11 → v12 migration", () => {
   it("backfills showDock=true for a pre-v12 file that lacks it (existing user keeps the Dock)", () => {
     const validated = prefs.validate(prefs.migrate({ version: 11, lang: "en" }));
     assert.strictEqual(validated.version, prefs.CURRENT_VERSION);
@@ -1410,9 +1410,9 @@ describe("prefs.migrate v11 → v12 (showDock default off for fresh installs)", 
     assert.strictEqual(validated.showDock, false);
   });
 
-  it("fresh defaults (no prefs file, migrate never runs) get showDock off", () => {
+  it("fresh defaults (no prefs file, migrate never runs) show the Dock icon", () => {
     const d = prefs.getDefaults();
-    assert.strictEqual(d.showDock, false);
+    assert.strictEqual(d.showDock, true);
   });
 
   it("is idempotent on v12 input (a fresh-install save is not re-backfilled)", () => {

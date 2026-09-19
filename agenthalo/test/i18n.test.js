@@ -544,13 +544,12 @@ describe("i18n locales", () => {
 });
 
 
-describe("public extension download pages", () => {
-  it("routes Chinese locales to Chinese and all other locales to English", () => {
+describe("public extension download", () => {
+  it("links every locale directly to the published extension archive", () => {
     const strings = loadSettingsI18nStrings();
     for (const lang of SUPPORTED_LANGS) {
-      const file = lang === "zh" || lang === "zh-TW" ? "README.zh-CN.md" : "README.md";
       assert.strictEqual(strings[lang].webBridgeDownloadUrl,
-        `https://github.com/addsumtech/AgentHalo/blob/main/${file}`);
+        "https://github.com/addsumtech/AgentHalo/releases/download/web-bridge-v0.3.3/AgentHalo-Web-Bridge.zip");
     }
   });
 });

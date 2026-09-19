@@ -36,6 +36,25 @@ function getZipNameParts(entryName) {
   return String(entryName || "").split("/").filter(Boolean);
 }
 
+function detectCompanionZipFormat(zipPath, options = {}) {
+  const fs = options.fs || defaultFs;
+  const stat = fs.statSync(zipPath);
+  if (!stat.isFile()) throw new Error("selected character package is not a file");
+  if (stat.size > MAX_THEME_ZIP_BYTES) throw new Error(`character zip exceeds ${MAX_THEME_ZIP_BYTES} bytes`);
+  const buffer = fs.readFileSync(zipPath);
+  if (buffer.length > MAX_THEME_ZIP_BYTES) throw new Error(`character zip exceeds ${MAX_THEME_ZIP_BYTES} bytes`);
+  const manifests = codexPetImporter.readZipEntries(buffer).filter((entry) => {
+    if (entry.directory) return false;
+    const parts = getZipNameParts(entry.name);
+    return parts.length <= 2 && ["theme.json", "pet.json"].includes(parts[parts.length - 1]);
+  });
+  if (manifests.length !== 1) {
+    throw new Error("ZIP must contain one character package with theme.json or pet.json at the root or in one top-level folder");
+  }
+  return manifests[0].name.endsWith("/pet.json") || manifests[0].name === "pet.json"
+    ? "codex-pet" : "agenthalo";
+}
+
 function chooseThemeZipRoot(entries) {
   const themeEntries = (entries || []).filter((entry) => {
     if (!entry || entry.directory) return false;
@@ -168,6 +187,7 @@ function importUserThemeZip(zipPath, options = {}) {
 
 module.exports = {
   MAX_THEME_ZIP_BYTES,
+  detectCompanionZipFormat,
   importUserThemeZip,
   sanitizeThemeDirName,
 };

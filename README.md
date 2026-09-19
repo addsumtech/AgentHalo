@@ -16,7 +16,7 @@ npx agenthalo
 
 也可以到 [Releases](https://github.com/addsumtech/AgentHalo/releases) 手动下载 `.dmg`。手动下载的文件带隔离属性，第一次打开需要在「系统设置 → 隐私与安全性」里允许一次；用 `npx` 安装不会遇到这一步。
 
-装好后到「设置 → 连接应用」，给你实际在用的 AI 工具装上 hook，桌宠才能收到状态。AgentHalo 没有 Dock 图标，它常驻菜单栏。
+装好后到「设置 → 连接应用」，给你实际在用的 AI 工具装上 hook，桌宠才能收到状态。AgentHalo 默认显示 Dock 图标，点击即可打开设置主界面，同时保留菜单栏入口；可在设置中关闭 Dock 图标。
 
 ## 能做什么
 

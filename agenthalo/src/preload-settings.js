@@ -182,6 +182,7 @@ contextBridge.exposeInMainWorld("settingsAPI", {
   copyUpdateError: (copyText) => ipcRenderer.invoke("settings:copy-update-error", copyText),
   openExternal: (url) => ipcRenderer.invoke("settings:open-external", url),
   listThemes: () => ipcRenderer.invoke("settings:list-themes"),
+  importCompanionZip: () => ipcRenderer.invoke("settings:import-companion-zip"),
   openUserThemesDir: () => ipcRenderer.invoke("settings:open-user-themes-dir"),
   importUserThemeZip: () => ipcRenderer.invoke("settings:import-user-theme-zip"),
   refreshCodexPets: () => ipcRenderer.invoke("settings:refresh-codex-pets"),

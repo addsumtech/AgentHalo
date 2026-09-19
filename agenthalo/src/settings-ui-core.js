@@ -109,6 +109,7 @@
     agentInstallationHintsPromise: null,
     themeList: null,
     codexPetsRefreshPending: false,
+    companionZipImportPending: false,
     codexPetZipImportPending: false,
     userThemeZipImportPending: false,
     codexPetRemovalPendingThemeId: null,
