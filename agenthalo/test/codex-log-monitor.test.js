@@ -202,6 +202,87 @@ describe("CodexLogMonitor", () => {
     monitor.start();
   });
 
+  it("keeps rotated Desktop rollouts on the same task as the original file", () => {
+    const rotatedName = TEST_FILENAME.replace(".jsonl",
+      "_019d23d5-aaaa-7000-bbbb-123456789abc.jsonl");
+    const sessions = new Map();
+    monitor = new CodexLogMonitor(makeConfig(tmpDir), (sid, state) => sessions.set(sid, state));
+    for (const name of [TEST_FILENAME, rotatedName]) {
+      const file = path.join(dateDir, name);
+      // Also cover older metadata without an explicit id: the segment suffix
+      // must not become part of the task identity even in the filename fallback.
+      fs.writeFileSync(file, [
+        JSON.stringify({ type: "session_meta", payload: { cwd: "/projects/foo" } }),
+        JSON.stringify({ type: "event_msg", payload: { type: "task_started" } }), "",
+      ].join("\n"));
+      monitor._pollFile(file, name);
+    }
+    assert.deepStrictEqual([...sessions], [[EXPECTED_SID, "thinking"]]);
+    assert.strictEqual(monitor._tracked.size, 2, "both files retain independent read positions");
+  });
+
+  for (const idField of ["session_id", "id"]) {
+    it(`uses session_meta.${idField} before emitting events or classifying the task`, () => {
+      const realId = "019d23d5-aaaa-7000-bbbb-123456789abc";
+      const file = path.join(dateDir, TEST_FILENAME);
+      fs.writeFileSync(file, [
+        JSON.stringify({ type: "session_meta", payload: { [idField]: realId, cwd: "/projects/foo" } }),
+        JSON.stringify({ type: "event_msg", payload: { type: "task_started" } }), "",
+      ].join("\n"));
+      const events = [];
+      monitor = new CodexLogMonitor(makeConfig(tmpDir), (...args) => events.push(args));
+      const classified = [];
+      monitor._classifier.registerSession = (sid) => { classified.push(sid); return "root"; };
+      monitor._pollFile(file, TEST_FILENAME);
+      assert.ok(events.length > 0);
+      assert.deepStrictEqual([...new Set(events.map(([sid]) => sid))], [`codex:${realId}`]);
+      assert.deepStrictEqual(classified, [`codex:${realId}`]);
+    });
+  }
+
+  it("ignores malformed metadata ids and retains the filename identity", () => {
+    const file = path.join(dateDir, TEST_FILENAME);
+    fs.writeFileSync(file, JSON.stringify({
+      type: "session_meta", payload: { session_id: "bad/id", id: 42, cwd: "/projects/foo" },
+    }) + "\n");
+    const events = [];
+    monitor = new CodexLogMonitor(makeConfig(tmpDir), (...args) => events.push(args));
+    monitor._pollFile(file, TEST_FILENAME);
+    assert.deepStrictEqual(events.map(([sid]) => sid), [EXPECTED_SID]);
+  });
+
+  it("recovers a rotated rollout under its original task identity", () => {
+    const name = TEST_FILENAME.replace(".jsonl", "_019d23d5-aaaa-7000-bbbb-123456789abc.jsonl");
+    const file = path.join(dateDir, name);
+    fs.writeFileSync(file, [
+      JSON.stringify({ type: "session_meta", payload: { id: EXPECTED_SID.slice(6), cwd: "/projects/foo" } }),
+      JSON.stringify({ timestamp: new Date().toISOString(), type: "event_msg", payload: { type: "task_started" } }), "",
+    ].join("\n"));
+    const old = new Date(Date.now() - 10 * 60 * 1000);
+    fs.utimesSync(file, old, old);
+    monitor = new CodexLogMonitor(makeConfig(tmpDir), () => {});
+    const recovered = monitor._recoverStalePendingUserInput(file, name);
+    assert.ok(recovered);
+    assert.strictEqual(recovered.sessionId, EXPECTED_SID);
+  });
+
+  it("an archived rotated rollout also hides the original task file", () => {
+    const archivedDir = path.join(tmpDir, "archived_sessions");
+    fs.mkdirSync(archivedDir);
+    const name = TEST_FILENAME.replace(".jsonl", "_019d23d5-aaaa-7000-bbbb-123456789abc.jsonl");
+    fs.writeFileSync(path.join(archivedDir, name), "");
+    const file = path.join(dateDir, TEST_FILENAME);
+    fs.writeFileSync(file, '{"type":"event_msg","payload":{"type":"task_started"}}\n');
+    const events = [];
+    const archived = [];
+    monitor = new CodexLogMonitor(makeConfig(tmpDir), (...args) => events.push(args), {
+      archivedDir, onSessionArchived: (sid) => archived.push(sid),
+    });
+    monitor._poll();
+    assert.deepStrictEqual(archived, [EXPECTED_SID]);
+    assert.deepStrictEqual(events, []);
+  });
+
   it("should map session_meta to idle", (_, done) => {
     const testFile = path.join(dateDir, TEST_FILENAME);
     fs.writeFileSync(testFile, '{"type":"session_meta","payload":{"cwd":"/projects/foo"}}\n');

@@ -108,6 +108,7 @@ scripts/*
 !scripts/manual/
 scripts/manual/*
 !scripts/manual/README.md
+!scripts/manual/claude-subagent-event-sampler.js
 !scripts/manual/remote-ssh-codespaces-546.ps1
 !scripts/manual/remote-ssh-codespaces-546-observe.ps1
 !scripts/manual/remote-ssh-codespaces-546-port-holder.js
@@ -127,6 +128,7 @@ scripts/manual/*
 !scripts/audit-repository-assets.js
 !scripts/assert-no-retired-telegram-sidecar.js
 !scripts/verify-release-version.js
+!scripts/verify-winget-arch-contract.js
 !scripts/verify-release-contributors.js
 !scripts/after-pack-koffi.js
 !scripts/audit-packaged-native.js

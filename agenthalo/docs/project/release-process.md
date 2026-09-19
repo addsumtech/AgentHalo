@@ -21,6 +21,15 @@ application directory and does not run as a repository-root GitHub workflow.
 7. Publish the matching npm installer only after the Release downloads work.
    Verify both the public registry version and an installation from the public ZIP.
 
+### v1.0.2 Draft Smoke Checklist
+
+- Confirm the packaged app shows `1.0.2` metadata on both architectures.
+- Settings -> About shows `v1.0.2`, sourced from `app.getVersion()`.
+- A Codex task with both original and suffixed rollout files appears once,
+  using its conversation title rather than a duplicate workspace-folder label.
+- Recovery and archive handling preserve the same conversation identity.
+- Verify both architectures, all four packages, and the npm installer's ZIP checksums.
+
 ### v1.0.1 Draft Smoke Checklist
 
 - Confirm the packaged app shows `1.0.1` metadata on both architectures.

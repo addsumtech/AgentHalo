@@ -32,6 +32,14 @@ const {
 const { parseCodexUserInputRecord } = require("../hooks/codex-user-input");
 const { normalizeCodexTurnId } = require("../src/codex-turn-id");
 
+const SESSION_UUID_PATTERN = "[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}";
+const SESSION_UUID_RE = new RegExp(`^${SESSION_UUID_PATTERN}$`, "i");
+const ROLLOUT_FILENAME_RE = new RegExp(
+  `^rollout-\\d{4}-\\d{2}-\\d{2}T\\d{2}-\\d{2}-\\d{2}-(${SESSION_UUID_PATTERN})`
+    + `(?:_${SESSION_UUID_PATTERN})?\\.jsonl$`,
+  "i"
+);
+
 const MAX_TRACKED_FILES = 50;
 const MAX_RETIRED_TRACKED_FILES = 100;
 const MAX_PARTIAL_BYTES = 65536;
@@ -1871,6 +1879,13 @@ class CodexLogMonitor {
 
   _applySessionMeta(payload, tracked) {
     if (!payload || typeof payload !== "object") return;
+    // Metadata identifies the conversation; a Desktop rollout suffix only
+    // identifies a log segment. Apply it before classification or any emit.
+    for (const id of [payload.session_id, payload.id]) {
+      if (typeof id !== "string" || !SESSION_UUID_RE.test(id)) continue;
+      tracked.sessionId = `codex:${id.toLowerCase()}`;
+      break;
+    }
     tracked.cwd = payload.cwd || "";
     tracked.codexOriginator = typeof payload.originator === "string" && payload.originator.trim()
       ? payload.originator.trim()
@@ -1897,15 +1912,11 @@ class CodexLogMonitor {
     return null;
   }
 
-  // Extract UUID from rollout filename
-  // rollout-2026-03-25T15-10-51-019d23d4-f1a9-7633-b9c7-758327137228.jsonl
+  // Desktop may rotate to rollout-<timestamp>-<thread UUID>_<segment UUID>.
+  // The thread UUID stays stable across segments, including archived files.
   _extractSessionId(fileName) {
-    // UUID v7 is the last 5 segments of the filename (before .jsonl)
-    const base = fileName.replace(".jsonl", "");
-    const parts = base.split("-");
-    // UUID: last 5 parts (8-4-4-4-12 hex)
-    if (parts.length < 10) return null;
-    return parts.slice(-5).join("-");
+    const match = ROLLOUT_FILENAME_RE.exec(fileName);
+    return match ? match[1].toLowerCase() : null;
   }
 
   _reconcileExitedExecSessions() {
