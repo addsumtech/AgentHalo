@@ -6,7 +6,8 @@
 
 - 新安装默认显示 Dock 图标，点击即可打开设置主界面；已有用户的显示偏好保持不变。
 - 桌面伙伴统一为“导入角色包”，自动识别 AgentHalo 和 Codex Pet 格式，入口移至角色列表下方。
-- 简化设置页的边框、配色和按钮层级。
+- 统一设置页与弹窗的文字层级：正文、标签和按钮使用常规字重，标题适度强调。
+- 连接检查改为简洁列表，减少正常状态的重复装饰，突出主要操作。
 - “下载扩展包”改为醒目的主按钮，“安装指引”提供浏览器选择和分步说明。
 - 未收到网页状态时显示“扩展已安装，请在 AI 网页中发起一次对话”；详情中的安装状态不再混用等待提示。
 - 同步全部七种界面语言。
@@ -37,10 +38,10 @@ npx agenthalo@latest
 ## 校验和
 
 ```text
-95a778b0bb0da0a9fd3e4ab1f5e6ee926d6afa8e0cc3681e9d4e47e9d0c2b82a  AgentHalo-1.0.1-arm64.dmg
-be17ffda546bb0c399e2a5bac36ed679fc26e2a64604e92f2d1f1ea37d493b00  AgentHalo-1.0.1-arm64.zip
-9365c69e0180d9b348ee65a335d2dcef827affe6be5dd06931385798a7edb01d  AgentHalo-1.0.1-x64.dmg
-c4154bd8820ddf9f5ca563018ddf4fac1a3865889ae53a60bc685cd5ff04c06d  AgentHalo-1.0.1-x64.zip
+fb4ab2e9d2bac714035baaba4437df73dfdabfcfe356bed91f21e9c7ad98814c  AgentHalo-1.0.1-arm64.dmg
+39ab0d87898085388c7df535eff1653d0924501206101dd2d69d972e88765d38  AgentHalo-1.0.1-arm64.zip
+c5f8d903680657bc395bce064f56df03b53cd8e5c27c9c6df28087d22bbf0059  AgentHalo-1.0.1-x64.dmg
+319d18908da9a068e99e14419b9c135fe362a070e810a5a6a8f25bf7b6353bfe  AgentHalo-1.0.1-x64.zip
 ```
 
 ## 许可证

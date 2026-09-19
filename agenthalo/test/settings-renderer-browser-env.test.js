@@ -8314,14 +8314,14 @@ describe("settings renderer browser environment", () => {
     assert.ok(css.includes(".doctor-action-notice-icon"));
     assert.ok(/@media \(prefers-color-scheme:\s*dark\)\s*\{[\s\S]*\.doctor-action-notice\.ok[\s\S]*color:\s*#8ce99a;[\s\S]*\.doctor-action-notice\.error[\s\S]*color:\s*#fca5a5;/.test(css));
     assert.ok(css.includes("@keyframes doctor-notice-in"));
-    assert.ok(/\.doctor-modal\s*\{[\s\S]*width:\s*min\(728px,\s*100%\);[\s\S]*max-height:\s*calc\(100vh \/ var\(--clawd-text-zoom, 1\) - 32px\);/.test(css));
-    assert.ok(/\.doctor-modal\s*\{[\s\S]*gap:\s*8px;[\s\S]*padding:\s*14px;/.test(css));
+    assert.ok(/\.doctor-modal\s*\{[\s\S]*width:\s*min\(680px,\s*100%\);[\s\S]*max-height:\s*calc\(100vh \/ var\(--clawd-text-zoom, 1\) - 32px\);/.test(css));
+    assert.ok(/\.doctor-modal\s*\{[\s\S]*gap:\s*12px;[\s\S]*padding:\s*20px;/.test(css));
     assert.ok(css.includes(".doctor-modal-entering"));
     assert.ok(css.includes("@keyframes doctor-modal-in"));
     assert.ok(css.includes(".doctor-last-checked"));
     assert.ok(/\.doctor-overall\s*\{[\s\S]*flex-wrap:\s*wrap;/.test(css));
-    assert.ok(/\.doctor-check-list\s*\{[\s\S]*gap:\s*6px;/.test(css));
-    assert.ok(/\.doctor-check-row\s*\{[\s\S]*padding:\s*8px 10px;/.test(css));
+    assert.ok(/\.doctor-check-list\s*\{[^}]*overflow-y:\s*auto;/.test(css));
+    assert.ok(/\.doctor-check-row\s*\{[^}]*padding:\s*11px 12px;/.test(css));
     assert.ok(/\.doctor-check-detail\s*\{[\s\S]*margin:\s*5px 0 0 17px;/.test(css));
     assert.ok(css.includes("--doctor-pass"));
     assert.ok(css.includes("--doctor-warning"));
@@ -8333,7 +8333,6 @@ describe("settings renderer browser environment", () => {
     assert.ok(css.includes(".doctor-connection-progress"));
     assert.ok(/\.doctor-action-bar\s*\{[\s\S]*align-items:\s*center;/.test(css));
     assert.ok(/\.doctor-action-notice-slot\s*\{[\s\S]*min-height:\s*24px;/.test(css));
-    assert.ok(/\.doctor-check-row\.pass\s*\{[\s\S]*border-left-color:\s*rgba\(var\(--doctor-pass-rgb\),\s*0\.72\);/.test(css));
     assert.ok(/\.doctor-check-row\.warning\s*\{[\s\S]*border-left-color:\s*rgba\(var\(--doctor-warning-rgb\),\s*0\.78\);/.test(css));
     assert.ok(/\.doctor-check-row\.critical\s*\{[\s\S]*border-left-color:\s*rgba\(var\(--doctor-critical-rgb\),\s*0\.78\);/.test(css));
     assert.ok(/\.doctor-agent-toggle\s*\{[\s\S]*grid-template-columns:\s*auto auto auto minmax\(0,\s*1fr\) auto;/.test(css));
@@ -8341,7 +8340,6 @@ describe("settings renderer browser environment", () => {
     assert.ok(/\.settings-disclosure\.collapsed\s*>\s*\.settings-disclosure-body\s*\{[\s\S]*grid-template-rows:\s*0fr;/.test(css));
     assert.ok(/\.doctor-agent-body\s*\{[\s\S]*transition-duration:\s*var\(--settings-disclosure-duration\),\s*var\(--settings-disclosure-shift-duration\);/.test(css));
     assert.ok(!css.includes("grid-template-rows 0.24s"));
-    assert.ok(/\.doctor-check-row\s*\{[\s\S]*border-left-width:\s*3px;/.test(css));
     assert.ok(/\.doctor-check-status\s*\{[\s\S]*border-radius:\s*999px;/.test(css));
     assert.ok(/\.doctor-close:hover\s*\{[\s\S]*background:\s*color-mix\(in srgb, var\(--accent\) 10%, transparent\);[\s\S]*transform:\s*scale\(1\.04\);/.test(css));
     assert.ok(/\.doctor-close:focus-visible\s*\{[\s\S]*outline:\s*2px solid var\(--accent\);/.test(css));

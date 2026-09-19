@@ -599,8 +599,8 @@
             renderActionNotice(core) +
           `</div>` +
           `<div class="doctor-actions">` +
-            `<button type="button" class="soft-btn" data-action="copy">${escape(core, t(core, "doctorCopyReport"))}</button>` +
-            `<button type="button" class="soft-btn" data-action="open-log">${escape(core, t(core, "doctorOpenLog"))}</button>` +
+            `<button type="button" class="soft-btn quiet" data-action="copy">${escape(core, t(core, "doctorCopyReport"))}</button>` +
+            `<button type="button" class="soft-btn quiet" data-action="open-log">${escape(core, t(core, "doctorOpenLog"))}</button>` +
             `<button type="button" class="soft-btn" data-action="test-connection"${testDisabled}>${escape(core, t(core, "doctorTestConnection"))}</button>` +
             `<button type="button" class="soft-btn accent" data-action="rerun">${escape(core, t(core, "doctorRerun"))}</button>` +
           `</div>` +
