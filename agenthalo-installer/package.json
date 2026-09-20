@@ -1,6 +1,6 @@
 {
   "name": "agenthalo",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "一条命令装好 AgentHalo：跟着 AI 任务状态动的桌面伙伴。Install AgentHalo, a desktop companion that follows your AI agents' state.",
   "bin": {
     "agenthalo": "bin/agenthalo.js"
