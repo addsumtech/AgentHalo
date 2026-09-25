@@ -376,6 +376,27 @@ function _writeSystemOpenAtLogin(enabled) {
     })
   );
 }
+
+const terminalFocusExtension = require("./terminal-focus-extension");
+
+function _logTerminalFocusExtensionResult(result) {
+  if (!result || typeof result !== "object") return result;
+  if (result.status === "error") {
+    console.warn("AgentHalo: terminal-focus extension:", result.message);
+    return result;
+  }
+  for (const dest of result.installed || []) {
+    console.log(`AgentHalo: installed terminal-focus extension to ${dest}`);
+  }
+  for (const dir of result.removed || []) {
+    console.log(`AgentHalo: removed terminal-focus extension copy ${dir}`);
+  }
+  if (result.installed && result.installed.length > 0) {
+    console.log(`AgentHalo: terminal-focus extension installed to ${result.installed.length} editor(s). Restart VS Code/Cursor to activate.`);
+  }
+  return result;
+}
+
 function _readSystemOpenAtLogin() {
   if (isLinux) return loginItemHelpers.linuxGetOpenAtLogin();
   return app.getLoginItemSettings(
@@ -463,6 +484,12 @@ const _settingsController = createSettingsController({
     startClaudeSettingsWatcher: () => _server.startClaudeSettingsWatcher(),
     stopClaudeSettingsWatcher: () => _server.stopClaudeSettingsWatcher(),
     setOpenAtLogin: _writeSystemOpenAtLogin,
+    installTerminalFocusExtension: () => _logTerminalFocusExtensionResult(
+      terminalFocusExtension.installTerminalFocusExtension()
+    ),
+    uninstallTerminalFocusExtension: () => _logTerminalFocusExtensionResult(
+      terminalFocusExtension.uninstallTerminalFocusExtension()
+    ),
     startMonitorForAgent: (id) => agentRuntime && agentRuntime.startMonitorForAgent(id),
     stopMonitorForAgent: (id) => agentRuntime && agentRuntime.stopMonitorForAgent(id),
     syncIntegrationForAgent: (id, options) =>
@@ -586,6 +613,11 @@ function getDashboardI18nPayload() {
 // only stable after the app is ready. MUST run before createWindow() so the
 // first menu render reads the hydrated value.
 function hydrateSystemBackedSettings() {
+  hydrateOpenAtLogin();
+  hydrateTerminalFocusExtension();
+}
+
+function hydrateOpenAtLogin() {
   if (_settingsController.get("openAtLoginHydrated")) return;
   let systemValue = false;
   try {
@@ -599,6 +631,27 @@ function hydrateSystemBackedSettings() {
   });
   if (result && result.status === "error") {
     console.warn("AgentHalo: openAtLogin hydration failed:", result.message);
+  }
+}
+
+// Builds before the terminal-focus switch existed copied the editor extension
+// on every launch without asking. A copy that is already present is therefore
+// imported as "on", so upgrading users keep terminal-tab focus; everyone else
+// starts with the switch off and nothing is installed until they opt in.
+function hydrateTerminalFocusExtension() {
+  if (_settingsController.get("terminalFocusExtensionHydrated")) return;
+  let present = false;
+  try {
+    present = terminalFocusExtension.isTerminalFocusExtensionInstalled();
+  } catch (err) {
+    console.warn("AgentHalo: failed to detect terminal-focus extension during hydration:", err && err.message);
+  }
+  const result = _settingsController.hydrate({
+    terminalFocusExtensionEnabled: present,
+    terminalFocusExtensionHydrated: true,
+  });
+  if (result && result.status === "error") {
+    console.warn("AgentHalo: terminal-focus extension hydration failed:", result.message);
   }
 }
 
@@ -3780,53 +3833,6 @@ Object.defineProperties(this || {}, {}); // no-op placeholder
 // injected deps. main.js remains the composition root; theme-runtime owns the
 // active theme source and the cleanup/refresh/reload protocol.
 
-// ── Auto-install VS Code / Cursor terminal-focus extension ──
-const EXT_ID = "clawd.clawd-terminal-focus";
-const EXT_VERSION = "0.1.2";
-const EXT_DIR_NAME = `${EXT_ID}-${EXT_VERSION}`;
-
-function installTerminalFocusExtension() {
-  const os = require("os");
-  const home = os.homedir();
-
-  // Extension source — in dev: ../extensions/vscode/, in packaged: app.asar.unpacked/
-  let extSrc = path.join(__dirname, "..", "extensions", "vscode");
-  extSrc = extSrc.replace("app.asar" + path.sep, "app.asar.unpacked" + path.sep);
-
-  if (!fs.existsSync(extSrc)) {
-    console.log("AgentHalo: terminal-focus extension source not found, skipping auto-install");
-    return;
-  }
-
-  const targets = [
-    path.join(home, ".vscode", "extensions"),
-    path.join(home, ".cursor", "extensions"),
-  ];
-
-  const filesToCopy = ["package.json", "extension.js"];
-  let installed = 0;
-
-  for (const extRoot of targets) {
-    if (!fs.existsSync(extRoot)) continue; // editor not installed
-    const dest = path.join(extRoot, EXT_DIR_NAME);
-    // Skip if already installed (check package.json exists)
-    if (fs.existsSync(path.join(dest, "package.json"))) continue;
-    try {
-      fs.mkdirSync(dest, { recursive: true });
-      for (const file of filesToCopy) {
-        fs.copyFileSync(path.join(extSrc, file), path.join(dest, file));
-      }
-      installed++;
-      console.log(`AgentHalo: installed terminal-focus extension to ${dest}`);
-    } catch (err) {
-      console.warn(`AgentHalo: failed to install extension to ${dest}:`, err.message);
-    }
-  }
-  if (installed > 0) {
-    console.log(`AgentHalo: terminal-focus extension installed to ${installed} editor(s). Restart VS Code/Cursor to activate.`);
-  }
-}
-
 // ── Single instance lock ──
 app.on("open-url", (event, url) => {
   event.preventDefault();
@@ -3988,7 +3994,8 @@ if (!gotTheLock) {
       return;
     }
 
-    // Import system-backed settings (openAtLogin) into prefs on first run.
+    // Import system-backed settings (openAtLogin, terminal-focus extension)
+    // into prefs on first run.
     // Must run before createWindow() so the first menu draw sees the
     // hydrated value rather than the schema default.
     hydrateSystemBackedSettings();
@@ -4091,9 +4098,15 @@ if (!gotTheLock) {
     // shouldn't see its file watcher spin up on the next launch.
     agentRuntime.startCodexLogMonitor();
 
-    // Auto-install VS Code/Cursor terminal-focus extension
-    try { installTerminalFocusExtension(); } catch (err) {
-      console.warn("AgentHalo: failed to auto-install terminal-focus extension:", err.message);
+    // VS Code/Cursor terminal-focus extension is opt-in (General settings).
+    // When the user has turned it on, refresh the copies so an editor
+    // installed later gets one and an older bundled version is replaced.
+    if (_settingsController.get("terminalFocusExtensionEnabled") === true) {
+      try {
+        _logTerminalFocusExtensionResult(terminalFocusExtension.installTerminalFocusExtension());
+      } catch (err) {
+        console.warn("AgentHalo: failed to refresh terminal-focus extension:", err && err.message);
+      }
     }
 
     // Auto-updater: setup event handlers (user triggers check via tray menu)

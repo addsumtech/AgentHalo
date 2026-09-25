@@ -16,6 +16,7 @@ test("settings system actions expose the command surface", () => {
     "openAtLogin",
     "repairLocalServer",
     "restartClawd",
+    "terminalFocusExtensionEnabled",
     "uninstallHooks",
   ]);
   assert.strictEqual(systemActions.autoStartWithClaude.lockKey, systemActions.manageClaudeHooksAutomatically.lockKey);
@@ -206,4 +207,41 @@ test("settings system actions require restart confirmation", () => {
   assert.strictEqual(result.status, "error");
   assert.match(result.message, /confirmation/);
   assert.deepStrictEqual(calls, []);
+});
+
+test("terminal-focus extension switch installs or removes the editor copies before commit", () => {
+  const calls = [];
+  const deps = {
+    installTerminalFocusExtension: () => {
+      calls.push("install");
+      return { status: "ok", installed: ["/home/u/.vscode/extensions/x"] };
+    },
+    uninstallTerminalFocusExtension: () => {
+      calls.push("uninstall");
+      return { status: "ok", removed: [] };
+    },
+  };
+
+  assert.deepStrictEqual(systemActions.terminalFocusExtensionEnabled.effect(true, deps), { status: "ok" });
+  assert.deepStrictEqual(systemActions.terminalFocusExtensionEnabled.effect(false, deps), { status: "ok" });
+  assert.deepStrictEqual(calls, ["install", "uninstall"]);
+  assert.strictEqual(systemActions.terminalFocusExtensionEnabled.validate("yes").status, "error");
+});
+
+test("terminal-focus extension switch refuses to commit when the editor copy cannot change", () => {
+  const failedInstall = systemActions.terminalFocusExtensionEnabled.effect(true, {
+    installTerminalFocusExtension: () => ({ status: "error", message: "source missing" }),
+    uninstallTerminalFocusExtension: () => ({ status: "ok" }),
+  });
+  assert.strictEqual(failedInstall.status, "error");
+  assert.match(failedInstall.message, /source missing/);
+
+  const thrownRemove = systemActions.terminalFocusExtensionEnabled.effect(false, {
+    installTerminalFocusExtension: () => ({ status: "ok" }),
+    uninstallTerminalFocusExtension: () => { throw new Error("EPERM"); },
+  });
+  assert.strictEqual(thrownRemove.status, "error");
+  assert.match(thrownRemove.message, /EPERM/);
+
+  assert.strictEqual(systemActions.terminalFocusExtensionEnabled.effect(true, {}).status, "error");
 });

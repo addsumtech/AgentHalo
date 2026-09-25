@@ -151,6 +151,44 @@ const openAtLogin = {
   },
 };
 
+// terminalFocusExtensionEnabled copies the bundled VS Code / Cursor
+// terminal-focus extension into the editors' extension folders, or removes
+// the copies again. Either direction must succeed before the switch commits,
+// so the UI never shows "on" without an installed extension (or "off" while a
+// copy is still listening on its local port).
+const terminalFocusExtensionEnabled = {
+  validate: requireBoolean("terminalFocusExtensionEnabled"),
+  effect(value, deps) {
+    if (
+      !deps
+      || typeof deps.installTerminalFocusExtension !== "function"
+      || typeof deps.uninstallTerminalFocusExtension !== "function"
+    ) {
+      return {
+        status: "error",
+        message: "terminalFocusExtensionEnabled effect requires installTerminalFocusExtension/uninstallTerminalFocusExtension deps",
+      };
+    }
+    try {
+      const result = value
+        ? deps.installTerminalFocusExtension()
+        : deps.uninstallTerminalFocusExtension();
+      if (result && typeof result === "object" && result.status === "error") {
+        return {
+          status: "error",
+          message: result.message || "terminalFocusExtensionEnabled: operation failed",
+        };
+      }
+      return { status: "ok" };
+    } catch (err) {
+      return {
+        status: "error",
+        message: `terminalFocusExtensionEnabled: ${err && err.message}`,
+      };
+    }
+  },
+};
+
 async function installHooks(_payload, deps) {
   if (!deps || typeof deps.syncClaudeHooksNow !== "function") {
     return {
@@ -285,5 +323,6 @@ module.exports = {
   openAtLogin,
   repairLocalServer,
   restartClawd,
+  terminalFocusExtensionEnabled,
   uninstallHooks,
 };

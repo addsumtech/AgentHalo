@@ -90,6 +90,9 @@ describe("prefs.getDefaults", () => {
     // a newly connected provider appears on its own instead of silently missing.
     assert.deepStrictEqual(d.quotaRingHiddenProviders, []);
     assert.strictEqual(d.claudeQuotaCollectionEnabled, false);
+    // Installing into the editors' extension folders is opt-in.
+    assert.strictEqual(d.terminalFocusExtensionEnabled, false);
+    assert.strictEqual(d.terminalFocusExtensionHydrated, false);
     assert.strictEqual(d.kimiQuotaCollectionEnabled, false);
     assert.strictEqual(d.quotaMergeSources, false);
     assert.strictEqual(d.telegramMigrationLastNotified, "");

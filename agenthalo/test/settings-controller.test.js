@@ -483,6 +483,52 @@ describe("Codex auto-start gate commit ordering", () => {
   });
 });
 
+describe("terminal-focus extension opt-in", () => {
+  it("defaults off and only commits after the install/remove effect succeeds", async () => {
+    const calls = [];
+    let installResult = { status: "error", message: "source missing" };
+    const ctrl = createSettingsController({
+      prefsPath: makeTempPath(),
+      injectedDeps: {
+        installTerminalFocusExtension: () => { calls.push("install"); return installResult; },
+        uninstallTerminalFocusExtension: () => { calls.push("uninstall"); return { status: "ok", removed: [] }; },
+      },
+    });
+    assert.strictEqual(ctrl.get("terminalFocusExtensionEnabled"), false);
+    assert.strictEqual(ctrl.get("terminalFocusExtensionHydrated"), false);
+
+    const failed = await ctrl.applyUpdate("terminalFocusExtensionEnabled", true);
+    assert.strictEqual(failed.status, "error");
+    assert.strictEqual(ctrl.get("terminalFocusExtensionEnabled"), false);
+
+    installResult = { status: "ok", installed: ["/x"] };
+    assert.strictEqual((await ctrl.applyUpdate("terminalFocusExtensionEnabled", true)).status, "ok");
+    assert.strictEqual(ctrl.get("terminalFocusExtensionEnabled"), true);
+    assert.strictEqual((await ctrl.applyUpdate("terminalFocusExtensionEnabled", false)).status, "ok");
+    assert.strictEqual(ctrl.get("terminalFocusExtensionEnabled"), false);
+    assert.deepStrictEqual(calls, ["install", "install", "uninstall"]);
+  });
+
+  it("imports an existing copy on upgrade without re-running the installer", () => {
+    const calls = [];
+    const ctrl = createSettingsController({
+      prefsPath: makeTempPath(),
+      injectedDeps: {
+        installTerminalFocusExtension: () => { calls.push("install"); return { status: "ok" }; },
+        uninstallTerminalFocusExtension: () => { calls.push("uninstall"); return { status: "ok" }; },
+      },
+    });
+    const result = ctrl.hydrate({
+      terminalFocusExtensionEnabled: true,
+      terminalFocusExtensionHydrated: true,
+    });
+    assert.strictEqual(result.status, "ok");
+    assert.strictEqual(ctrl.get("terminalFocusExtensionEnabled"), true);
+    assert.strictEqual(ctrl.get("terminalFocusExtensionHydrated"), true);
+    assert.deepStrictEqual(calls, []);
+  });
+});
+
 describe("setTextScaleForDisplay end-to-end commit", () => {
   it("commits the per-display map through the controller and persists it", async () => {
     // Regression: the command's commit key must pass the controller's

@@ -188,6 +188,14 @@ const SCHEMA = {
   // would see prefs report `false` and have it written back to the system.
   openAtLogin: { type: "boolean", default: false },
   openAtLoginHydrated: { type: "boolean", default: false },
+  // System-backed: the VS Code / Cursor terminal-focus extension lives in the
+  // editors' own extension folders and is only copied there when this is on.
+  // Earlier builds installed it silently on every launch, so the first launch
+  // that knows this key imports "a copy is already present" as `true` (see
+  // hydrateSystemBackedSettings in main.js) and existing users keep it; fresh
+  // installs without a copy stay off.
+  terminalFocusExtensionEnabled: { type: "boolean", default: false },
+  terminalFocusExtensionHydrated: { type: "boolean", default: false },
   bubbleFollowPet: { type: "boolean", default: false },
   bubbleFollowPreference: { type: "string", default: "auto", enum: ["auto", "left", "right"] },
   bubbleFixedCorner: {

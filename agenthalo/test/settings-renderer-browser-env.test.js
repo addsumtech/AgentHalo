@@ -2631,12 +2631,42 @@ describe("settings renderer browser environment", () => {
     const before = JSON.stringify(snapshot);
     const harness = loadGeneralTabForTest({ snapshot, platform: "MacIntel" });
     harness.renderContent();
-    for (const key of ["freeRoam", "openAtLogin", "showTray", "showDock"]) assert.ok(harness.getSwitch(key), key);
+    for (const key of ["freeRoam", "openAtLogin", "showTray", "showDock", "terminalFocusExtensionEnabled"]) assert.ok(harness.getSwitch(key), key);
     for (const key of ["sessionHudEnabled", "hideBubbles", "testReactionsEnabled", "lowPowerIdleMode", "keepAwakeWhileWorking"]) assert.equal(harness.getSwitch(key), null, key);
     assert.equal(harness.core.state.mountedControls.permissionAutomationMode, null);
     assert.equal(JSON.stringify(snapshot), before);
     assert.equal(harness.core.state.snapshot.sessionStaleMs, 123000);
     assert.equal(harness.core.state.snapshot.permissionAutomationMode, "off");
+  });
+
+  it("offers the VS Code / Cursor terminal-focus extension as an opt-in switch", async () => {
+    const i18nSource = fs.readFileSync(SETTINGS_I18N, "utf8");
+    for (const key of ["sectionEditorIntegration", "rowTerminalFocusExtension", "rowTerminalFocusExtensionDesc"]) {
+      const matches = i18nSource.match(new RegExp(`\\b${key}:`, "g"));
+      assert.strictEqual(matches ? matches.length : 0, 7, `${key} should appear in all 7 supported languages`);
+    }
+    const updateCalls = [];
+    const harness = loadGeneralTabForTest({
+      snapshot: makeGeneralSnapshot({ terminalFocusExtensionEnabled: false }),
+      platform: "MacIntel",
+      settingsAPI: {
+        update: (key, value) => {
+          updateCalls.push({ key, value });
+          return Promise.resolve({ status: "ok" });
+        },
+      },
+    });
+    harness.renderContent();
+    const sw = harness.getSwitch("terminalFocusExtensionEnabled");
+    assert.ok(sw, "the switch must mount on General");
+    assert.strictEqual(sw.classList.contains("on"), false, "off unless the user opted in");
+    const row = harness.getSwitchMeta("terminalFocusExtensionEnabled").row;
+    assert.strictEqual(row.querySelector(".row-label").textContent, "VS Code / Cursor terminal focus");
+    assert.match(row.querySelector(".row-desc").textContent, /127\.0\.0\.1/);
+
+    sw.dispatchEvent({ type: "click", bubbles: true, stopPropagation() {} });
+    await new Promise((r) => setTimeout(r, 0));
+    assert.deepStrictEqual(updateCalls, [{ key: "terminalFocusExtensionEnabled", value: true }]);
   });
 
   it("defers recap recovery queries while the Settings document is hidden", async () => {
