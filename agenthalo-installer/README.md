@@ -11,9 +11,9 @@ npx agenthalo
 ## 它做了什么
 
 1. 识别芯片（Apple Silicon / Intel），选对应的包。
-2. 从对应版本的 GitHub release 下载 zip。
+2. 从对应版本的 GitHub release 下载 zip；30 秒收不到数据就放弃。
 3. 核对 SHA-256，和本包内固定的校验和比对。
-4. 用 `ditto` 解压安装到 `/Applications`，并启动。
+4. 用 `ditto` 解压，先复制到 `/Applications` 里的临时位置，退出旧版后原子替换并启动。旧版退不掉时不做替换，已安装的版本保持原样。
 
 安装到别处：
 

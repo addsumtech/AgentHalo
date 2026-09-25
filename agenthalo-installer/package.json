@@ -5,6 +5,9 @@
   "bin": {
     "agenthalo": "bin/agenthalo.js"
   },
+  "scripts": {
+    "test": "node --test"
+  },
   "files": [
     "bin",
     "README.md"

@@ -31,3 +31,6 @@ jobs:
       - name: Web bridge tests
         working-directory: agenthalo-web-bridge
         run: node --test test/*.test.js
+      - name: Installer tests
+        working-directory: agenthalo-installer
+        run: npm test

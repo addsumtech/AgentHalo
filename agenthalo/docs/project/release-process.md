@@ -6,8 +6,8 @@ AgentHalo currently publishes macOS packages from local builds. The upstream
 cross-platform workflow below is retained as reference; it lives inside this
 application directory and does not run as a repository-root GitHub workflow.
 The repository-root `.github/workflows/ci.yml` runs `npm ci`, `npm test`,
-`npm run audit:assets`, and the web bridge tests on macOS for every push and
-pull request.
+`npm run audit:assets`, and the web bridge and npx installer tests on macOS
+for every push and pull request.
 
 1. Keep the app's `package.json`, `package-lock.json`, and the sibling
    `agenthalo-installer/package.json` on the same release version.
