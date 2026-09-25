@@ -1,0 +1,33 @@
+name: CI
+
+# The repository root is one level above the Electron app. The workflows in
+# agenthalo/.github/workflows/ are the retained upstream release pipelines;
+# GitHub never runs them from there.
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: agenthalo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: agenthalo/.nvmrc
+          cache: npm
+          cache-dependency-path: agenthalo/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run audit:assets
+      - name: Web bridge tests
+        working-directory: agenthalo-web-bridge
+        run: node --test test/*.test.js
