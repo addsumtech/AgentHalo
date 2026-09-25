@@ -2,7 +2,7 @@
   "name": "clawd-terminal-focus",
   "displayName": "AgentHalo Terminal Focus",
   "description": "Enables AgentHalo to focus the terminal tab associated with a task",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "clawd",
   "engines": {
     "vscode": "^1.70.0"

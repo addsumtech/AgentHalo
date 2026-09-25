@@ -1,6 +1,6 @@
 # AgentHalo Privacy Policy
 
-**Last updated:** 2026-09-19
+**Last updated:** 2026-09-25
 **Effective date:** 2026-09-13
 **Operator:** Addsum
 **Privacy contact:** [addsumtech@gmail.com](mailto:addsumtech@gmail.com)
@@ -49,6 +49,15 @@ Your locally installed AI coding tools post their status to it through hook scri
 
 There is no authentication beyond the localhost binding. Any program already running as you could post to this port. We consider that the same trust boundary as your own shell.
 
+## The optional VS Code / Cursor extension
+
+AgentHalo can jump to the terminal tab of a task running inside VS Code or Cursor. That needs a small helper extension inside the editor, and it is off by default. It is installed only when you turn on **VS Code / Cursor terminal focus** in Settings. If an earlier AgentHalo build had already installed it, the switch starts on so nothing changes for you.
+
+- Turning it on copies two files (`package.json` and `extension.js`) into `~/.vscode/extensions/` and `~/.cursor/extensions/`, for whichever of those editors you have. Turning it off deletes those copies.
+- While the editor runs, the extension listens on `127.0.0.1`, on the first free port between 23456 and 23460. It is reachable only from your own machine.
+- When you click a task, AgentHalo sends it the process ids of that task's terminal, and the extension brings the matching terminal tab to the front. Requests larger than 16 KB are refused.
+- The extension stores nothing and makes no network requests. Like AgentHalo's own port, it has no authentication beyond the localhost binding.
+
 ## Optional integrations
 
 The desktop build ships with these turned off, and Settings currently blocks turning them on: Telegram, Slack, Feishu/Lark, Discord Rich Presence, remote SSH, and LAN preview. Their code is still in the repository for people who build their own copy. If you build a copy and enable one, that integration sends data to the service you configured, under that service's own privacy policy, and this policy does not cover it.
@@ -85,6 +94,7 @@ Because nothing is collected, there is no account to close and no data for us to
 - Turn footprint recording off, or delete the recorded data, in Settings.
 - Remove the Kimi key in Settings to delete the encrypted credential file.
 - Remove an integration in Settings to uninstall the hook it added to that tool's configuration.
+- Turn off VS Code / Cursor terminal focus in Settings to delete the editor extension.
 - Uninstall the browser extension to stop all web page observation.
 - Delete `~/Library/Application Support/AgentHalo/` and `~/.clawd/` to remove everything AgentHalo has written.
 
@@ -100,7 +110,7 @@ Privacy questions: [addsumtech@gmail.com](mailto:addsumtech@gmail.com).
 
 # AgentHalo 隐私政策
 
-**最后更新：** 2026-09-19
+**最后更新：** 2026-09-25
 **生效日期：** 2026-09-13
 **运营主体：** Addsum
 **隐私联系：** [addsumtech@gmail.com](mailto:addsumtech@gmail.com)
@@ -149,6 +159,15 @@ AgentHalo 会在 `127.0.0.1` 上启动一个小的 HTTP 服务，占用 23333 �
 
 除了绑定在 localhost 之外没有额外鉴权。任何已经以你的身份运行的程序都能往这个端口发消息。我们认为这和你自己的 shell 是同一个信任边界。
 
+## 可选的 VS Code / Cursor 扩展
+
+AgentHalo 可以跳转到在 VS Code 或 Cursor 里运行的任务所在的终端标签页。这需要在编辑器里装一个小的辅助扩展，默认关闭，只有你在设置里打开 **VS Code / Cursor 终端聚焦** 时才会安装。如果之前版本的 AgentHalo 已经装过它，这个开关会默认打开，你的使用方式不会改变。
+
+- 打开后，AgentHalo 会把两个文件（`package.json` 和 `extension.js`）复制到 `~/.vscode/extensions/` 和 `~/.cursor/extensions/`，只针对你装了的编辑器。关闭后会删除这些副本。
+- 编辑器运行期间，扩展在 `127.0.0.1` 上监听 23456 到 23460 之间第一个空闲端口，只能从本机访问。
+- 你点击任务时，AgentHalo 把该任务终端的进程号发给它，扩展把对应的终端标签页切到前台。超过 16 KB 的请求会被拒绝。
+- 扩展不保存任何数据，也不发起任何网络请求。和 AgentHalo 自己的端口一样，除了绑定在 localhost 之外没有额外鉴权。
+
 ## 可选集成
 
 桌面版出厂就关闭了这些集成，而且设置里当前禁止开启：Telegram、Slack、飞书/Lark、Discord Rich Presence、远程 SSH、局域网预览。它们的代码仍保留在仓库里，供自行构建的人使用。如果你自己构建并启用了某一项，该集成会把数据发给你配置的服务，适用那个服务自己的隐私政策，本政策不覆盖。
@@ -185,6 +204,7 @@ AgentHalo 是开发者工具，不面向 13 岁以下儿童，也不会有意收
 - 在设置里关闭足迹记录，或删除已记录的数据。
 - 在设置里移除 Kimi key，即删除那个加密凭据文件。
 - 在设置里移除某个集成，即卸载它装到那个工具配置里的 hook。
+- 在设置里关闭 VS Code / Cursor 终端聚焦，即删除编辑器扩展。
 - 卸载浏览器扩展，即停止全部网页观察。
 - 删除 `~/Library/Application Support/AgentHalo/` 和 `~/.clawd/`，即清除 AgentHalo 写过的一切。
 

@@ -37,6 +37,7 @@
     "keepSizeAcrossDisplays",
     "fullscreenAutoHide",
     "openAtLogin",
+    "terminalFocusExtensionEnabled",
     "hideBubbles",
     "bubbleFollowPet",
     "bubbleFollowPreference",
@@ -476,6 +477,15 @@
     parent.appendChild(helpers.buildSection(t("sectionStartupDisplay"), [
       helpers.buildSwitchRow({ key: "openAtLogin", labelKey: "rowOpenAtLogin" }),
       ...buildMacAppPresenceRows(),
+    ]));
+    // Installing into another app's extension folder is opt-in, so it gets a
+    // described switch of its own rather than riding along with startup.
+    parent.appendChild(helpers.buildSection(t("sectionEditorIntegration"), [
+      helpers.buildSwitchRow({
+        key: "terminalFocusExtensionEnabled",
+        labelKey: "rowTerminalFocusExtension",
+        descKey: "rowTerminalFocusExtensionDesc",
+      }),
     ]));
 
     const links = document.createElement("div");

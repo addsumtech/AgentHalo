@@ -137,6 +137,7 @@ const {
   manageClaudeHooksAutomatically,
   openAtLogin,
   repairLocalServer,
+  terminalFocusExtensionEnabled,
   uninstallHooks,
 } = require("./settings-actions-system");
 const {
@@ -562,6 +563,10 @@ const updateRegistry = {
   //   no effect. After hydration prefs becomes the source of truth and the
   //   user-visible toggle goes through the openAtLogin gate above.
   openAtLoginHydrated: requireBoolean("openAtLoginHydrated"),
+  terminalFocusExtensionEnabled,
+  // Same one-shot import as openAtLoginHydrated, for an extension copy that an
+  // earlier build installed without asking.
+  terminalFocusExtensionHydrated: requireBoolean("terminalFocusExtensionHydrated"),
 
   // Independent macOS visibility preferences.
   showTray: requireBoolean("showTray"),

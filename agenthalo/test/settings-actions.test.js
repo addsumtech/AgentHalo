@@ -168,7 +168,7 @@ describe("updateRegistry pure-data validators", () => {
     for (const key of [
       "sessionHudEnabled", "sessionHudShowElapsed", "sessionHudShowContextUsage", "sessionHudShowQuota", "sessionHudCleanupDetached",
       "sessionHudShowStateLabels", "sessionHudPinned",
-      "miniMode", "openAtLoginHydrated", "soundMuted", "bubbleFollowPet",
+      "miniMode", "openAtLoginHydrated", "terminalFocusExtensionHydrated", "soundMuted", "bubbleFollowPet",
       "hideBubbles", "permissionBubblesEnabled", "lowPowerIdleMode",
       "testReactionsEnabled",
       "allowEdgePinning", "disableMiniMode", "keepSizeAcrossDisplays", "codexHookHealthNotifyEnabled",
