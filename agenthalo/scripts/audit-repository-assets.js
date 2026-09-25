@@ -80,6 +80,39 @@ function matchesAnyGlob(filePath, globs) {
   return (globs || []).some((glob) => matchesGlob(filePath, glob));
 }
 
+// `{a,b}` alternation, as electron-builder's minimatch expands it. Only used
+// for build.files; policy globs stay brace-free.
+function expandBraces(glob) {
+  const match = /\{([^{}]*)\}/.exec(glob);
+  if (!match) return [glob];
+  const before = glob.slice(0, match.index);
+  const after = glob.slice(match.index + match[0].length);
+  return match[1].split(",").flatMap((alternative) => expandBraces(`${before}${alternative}${after}`));
+}
+
+// build.files is ordered: electron-builder lets the last matching pattern
+// decide, so a later `!pattern` removes files an earlier pattern added.
+function compileBuildFiles(globs) {
+  return (globs || []).map((glob) => {
+    if (typeof glob !== "string" || !glob.trim()) {
+      throw new TypeError("glob must be a non-empty string");
+    }
+    const negate = glob.startsWith("!");
+    const body = negate ? glob.slice(1) : glob;
+    return { glob, negate, regexes: expandBraces(normalizePath(body)).map(globToRegExp) };
+  });
+}
+
+function matchesBuildFiles(filePath, compiled) {
+  const target = normalizePath(filePath);
+  let included = false;
+  for (const pattern of compiled) {
+    if (pattern.negate !== included) continue;
+    if (pattern.regexes.some((regex) => regex.test(target))) included = !pattern.negate;
+  }
+  return included;
+}
+
 function sha256File(filePath) {
   const hash = crypto.createHash("sha256");
   hash.update(fs.readFileSync(filePath));
@@ -184,12 +217,14 @@ function packageEntry(fullPath, sourcePath, packagePath, origin, asarUnpack) {
 function buildSourcePackageManifest(repoRoot, build, revision) {
   const buildFiles = stableSort(build.files || []);
   const unpackGlobs = stableSort(build.asarUnpack || []);
-  for (const glob of [...buildFiles, ...unpackGlobs]) globToRegExp(glob);
+  // Compile eagerly so unsupported syntax fails even in an empty repository.
+  const compiledBuildFiles = compileBuildFiles(build.files || []);
+  for (const glob of unpackGlobs) globToRegExp(glob);
   const allFiles = walkFiles(repoRoot);
   const appSources = new Map();
 
   for (const file of allFiles) {
-    if (matchesAnyGlob(file.path, buildFiles)) appSources.set(file.path, file);
+    if (matchesBuildFiles(file.path, compiledBuildFiles)) appSources.set(file.path, file);
   }
 
   const implicitPackageJson = path.join(repoRoot, "package.json");
@@ -800,8 +835,10 @@ module.exports = {
   buildExtractedPackageManifest,
   buildSourcePackageManifest,
   findForeignNativeFiles,
+  compileBuildFiles,
   globToRegExp,
   inspectNativeBuffer,
+  matchesBuildFiles,
   matchesGlob,
   parseArgs,
   parseTrackedTree,

@@ -7,8 +7,20 @@ const { minimatch } = require("minimatch");
 const pkg = require("../package.json");
 const ROOT = path.join(__dirname, "..");
 
+// Whether electron-builder would package `target` for these build.files
+// globs. Patterns apply in order and the last matching one decides, so a
+// later "!pattern" removes what an earlier pattern added — a naive
+// `globs.some(minimatch)` would treat every "!x" as matching everything else.
 function matchedByAnyGlob(globs, target) {
-  return globs.some((g) => minimatch(target, g));
+  let included = false;
+  for (const glob of globs) {
+    if (glob.startsWith("!")) {
+      if (included && minimatch(target, glob.slice(1), { dot: true })) included = false;
+    } else if (!included && minimatch(target, glob, { dot: true })) {
+      included = true;
+    }
+  }
+  return included;
 }
 
 function sliceWorkflowBlock(workflow, startMarker, endMarker) {
@@ -39,6 +51,17 @@ describe("package build config", () => {
         pkg.scripts["audit:assets"],
         "node scripts/audit-repository-assets.js"
       );
+    });
+
+    it("applies build.files excludes in order", () => {
+      assert.strictEqual(matchedByAnyGlob(["src/**/*", "!src/b.js"], "src/a.js"), true);
+      assert.strictEqual(matchedByAnyGlob(["src/**/*", "!src/b.js"], "src/b.js"), false);
+      assert.strictEqual(matchedByAnyGlob(["!src/b.js"], "assets/x.png"), false, "an exclude never adds a file");
+      assert.strictEqual(matchedByAnyGlob(pkg.build.files, "src/main.js"), true);
+      assert.strictEqual(matchedByAnyGlob(pkg.build.files, "src/telegram-native-runner.js"), false);
+      assert.strictEqual(matchedByAnyGlob(pkg.build.files, "pwa/app.js"), false);
+      assert.strictEqual(matchedByAnyGlob(pkg.build.files, "assets/svg/old/clawd-working-typing-old.svg"), false);
+      assert.strictEqual(matchedByAnyGlob(pkg.build.files, "assets/svg/clawd-happy.svg"), true);
     });
 
     it("does not match retained source artwork with package globs", () => {

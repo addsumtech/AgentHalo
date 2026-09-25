@@ -9,7 +9,9 @@ const {
   analyzeAudit,
   buildExtractedPackageManifest,
   buildSourcePackageManifest,
+  compileBuildFiles,
   inspectNativeBuffer,
+  matchesBuildFiles,
   matchesGlob,
   parseArgs,
   resolvePolicy,
@@ -449,12 +451,49 @@ describe("repository asset audit", () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "asset-audit-glob-"));
     try {
       assert.throws(
-        () => buildSourcePackageManifest(root, { files: ["!**/*.map"] }, "abc"),
-        /unsupported glob negation/,
+        () => buildSourcePackageManifest(root, { files: ["src/*.[jt]s"] }, "abc"),
+        /unsupported glob brace or character-class/,
+      );
+      assert.throws(
+        () => buildSourcePackageManifest(root, { files: ["!src/+(a|b).js"] }, "abc"),
+        /unsupported glob extglob/,
       );
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
     }
+  });
+
+  it("applies build.files in order, as electron-builder does, including ! excludes and braces", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "asset-audit-negation-"));
+    try {
+      for (const file of ["src/main.js", "src/retired.js", "pwa/app.js", "assets/svg/a.svg", "assets/svg/old/b.svg"]) {
+        fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+        fs.writeFileSync(path.join(root, file), file);
+      }
+      fs.writeFileSync(path.join(root, "package.json"), "{}");
+      const manifest = buildSourcePackageManifest(root, {
+        files: [
+          "src/**/*",
+          "assets/svg/**/*",
+          "pwa/**/*",
+          "!pwa/**/*",
+          "!assets/svg/old/**/*",
+          "!src/retired.js",
+          "!**/node_modules/ws{,/**/*}",
+        ],
+      }, "abc");
+      assert.deepStrictEqual(
+        manifest.files.map((file) => file.sourcePath),
+        ["assets/svg/a.svg", "package.json", "src/main.js"],
+      );
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+    const compiled = compileBuildFiles(["**/*", "!**/node_modules/@scope/pkg{,/**/*}", "node_modules/@scope/pkg/keep.js"]);
+    assert.strictEqual(matchesBuildFiles("node_modules/@scope/pkg", compiled), false);
+    assert.strictEqual(matchesBuildFiles("node_modules/@scope/pkg/lib/index.js", compiled), false);
+    assert.strictEqual(matchesBuildFiles("node_modules/@scope/pkg-other/index.js", compiled), true);
+    assert.strictEqual(matchesBuildFiles("node_modules/@scope/pkg/keep.js", compiled), true, "a later include wins");
   });
 
   it("requires an explicit target when auditing an extracted package", () => {
