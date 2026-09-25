@@ -12,6 +12,20 @@ let cachedPort = null;
 let lastProbeAt = 0;
 const PROBE_BACKOFF_MS = 5000;
 
+// The manifest's content-script origins, each with the site key content.js
+// uses for it. A message from any other sender is ignored.
+const SITE_KEYS_BY_ORIGIN = {
+  "https://claude.ai": "claude-web",
+  "https://chatgpt.com": "chatgpt-web",
+  "https://chat.openai.com": "chatgpt-web",
+  "https://gemini.google.com": "gemini-web",
+};
+// Exactly what content.js reports. The forwarded body is rebuilt from these
+// fields, so a compromised page renderer cannot smuggle process metadata
+// (source_pid, pid_chain, editor, ...) or another agent's ID into AgentHalo.
+const WEB_STATES = new Set(["thinking", "working", "attention", "idle"]);
+const WEB_EVENTS = new Set(["UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop", "SessionEnd"]);
+
 // A tab owns only its currently displayed conversation. Persist pending ends
 // across service-worker and browser restarts so a missed close is recoverable.
 const tabSessions = new Map();
@@ -159,16 +173,43 @@ async function postState(body, { retry = true } = {}) {
   }
 }
 
+function senderSiteKey(sender) {
+  if (!sender || !sender.tab || sender.id !== chrome.runtime.id) return null;
+  let origin = sender.origin;
+  if (!origin && sender.url) {
+    try { origin = new URL(sender.url).origin; } catch { origin = null; }
+  }
+  return Object.prototype.hasOwnProperty.call(SITE_KEYS_BY_ORIGIN, origin) ? SITE_KEYS_BY_ORIGIN[origin] : null;
+}
+
+function pickStateFields(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  if (typeof raw.session_id !== "string" || !raw.session_id || raw.session_id.length > 512) return null;
+  if (!WEB_STATES.has(raw.state) || !WEB_EVENTS.has(raw.event)) return null;
+  const body = { session_id: raw.session_id, state: raw.state, event: raw.event, platform: "webui" };
+  if (typeof raw.cwd === "string" && raw.cwd && raw.cwd.length <= 2048) body.cwd = raw.cwd;
+  if (typeof raw.session_title === "string" && raw.session_title) body.session_title = raw.session_title.slice(0, 120);
+  if (typeof raw.tool_name === "string" && raw.tool_name && raw.tool_name.length <= 64) body.tool_name = raw.tool_name;
+  if (raw.preserve_state === true) body.preserve_state = true;
+  return body;
+}
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (!msg || msg.type !== "clawd-state" || !msg.body) return false;
   const tabId = sender && sender.tab ? sender.tab.id : null;
   if (tabId == null) return false;
-  const siteKey = msg.siteKey || msg.body.site_key || "";
+  // The site comes from the browser-reported sender, never from the message.
+  const siteKey = senderSiteKey(sender);
+  if (!siteKey) return false;
+  const fields = pickStateFields(msg.body);
+  if (!fields) {
+    sendResponse({ ok: false, reason: "invalid-message" });
+    return false;
+  }
   // Browser-owned tab IDs keep duplicated sessionStorage tokens independent.
-  const body = { ...msg.body, session_id: `web-${tabId}-${msg.body.session_id}` };
-  delete body.site_key;
+  const body = { ...fields, session_id: `web-${tabId}-${fields.session_id}` };
   queueEvent(async () => {
-    if (!body.agent_id) body.agent_id = await resolveAgentId(siteKey);
+    body.agent_id = await resolveAgentId(siteKey);
     const previous = tabSessions.get(tabId);
     if (body.event === "SessionEnd") {
       if (!previous || previous.session_id !== body.session_id
