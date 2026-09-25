@@ -17,7 +17,9 @@ pull request.
 4. Build both architectures with `electron-builder --mac dmg zip --arm64 --x64 --publish never`.
 5. Verify the exact ZIP and DMG contents, signatures, native architecture,
    packaged Koffi calls, and SHA-256 values. Run the installer's
-   `scripts/sync-checksums.js` against these final ZIP files.
+   `scripts/sync-checksums.js` against these final ZIP files. Confirm the
+   `build.electronFuses` settings with
+   `npx @electron/fuses read --app dist/mac-arm64/AgentHalo.app` (and the x64 app).
 6. Commit and push the source and version tag. Upload the four installers and
    checksum file to a draft Release; compare uploaded hashes before publishing.
 7. Publish the matching npm installer only after the Release downloads work.

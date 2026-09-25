@@ -80,6 +80,13 @@
     "productName": "AgentHalo",
     "copyright": "© 2026 Addsum. Upstream: © 2026 Ruller_Lulu and contributors.",
     "afterPack": "scripts/after-pack-koffi.js",
+    "electronFuses": {
+      "runAsNode": false,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "onlyLoadAppFromAsar": true,
+      "enableEmbeddedAsarIntegrityValidation": true
+    },
     "protocols": [
       {
         "name": "AgentHalo Import Protocol",

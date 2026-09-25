@@ -150,6 +150,47 @@ describe("package build config", () => {
     );
   });
 
+  describe("Electron fuses", () => {
+    it("locks the packaged binary to the bundled app", () => {
+      assert.deepStrictEqual(pkg.build.electronFuses, {
+        runAsNode: false,
+        enableNodeOptionsEnvironmentVariable: false,
+        enableNodeCliInspectArguments: false,
+        onlyLoadAppFromAsar: true,
+        enableEmbeddedAsarIntegrityValidation: true,
+      });
+      // onlyLoadAppFromAsar and asar integrity both need an asar archive.
+      assert.notStrictEqual(pkg.build.asar, false);
+    });
+
+    it("never runs the packaged app binary as Node", () => {
+      // Hooks run under the user's own node (resolveNodeBin looks for a
+      // system node when called from Electron) and auto-start launches the
+      // GUI executable with ELECTRON_RUN_AS_NODE removed, so runAsNode can be
+      // off. Any shipped file that sets the variable would now silently start
+      // the GUI instead.
+      const offenders = [];
+      const visit = (dir) => {
+        for (const entry of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) {
+          const rel = path.posix.join(dir, entry.name);
+          if (entry.isDirectory()) { visit(rel); continue; }
+          if (!/\.(?:c?js|mjs|ts|py)$/.test(entry.name)) continue;
+          fs.readFileSync(path.join(ROOT, rel), "utf8").split("\n").forEach((line, index) => {
+            if (!line.includes("ELECTRON_RUN_AS_NODE")) return;
+            if (/^\s*(?:\/\/|\*|#)/.test(line) || /\bdelete\b/.test(line)) return;
+            offenders.push(`${rel}:${index + 1}`);
+          });
+        }
+      };
+      for (const dir of ["src", "hooks", "agents", "extensions"]) visit(dir);
+      assert.deepStrictEqual(offenders, []);
+      // The inherited NSIS uninstall cleanup targets the upstream executable
+      // name, which AgentHalo never produces, so it cannot hit the fused binary.
+      const nsis = fs.readFileSync(path.join(ROOT, "build", "installer.nsh"), "utf8");
+      assert.doesNotMatch(nsis, new RegExp(`${pkg.build.productName}\\.exe`));
+    });
+  });
+
   describe("target-native Koffi packaging", () => {
     it("pins the reviewed Koffi line and prunes only through the afterPack hook", () => {
       assert.strictEqual(pkg.dependencies.koffi, "2.16.3");
