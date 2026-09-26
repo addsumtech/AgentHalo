@@ -25,6 +25,21 @@ for every push and pull request.
 7. Publish the matching npm installer only after the Release downloads work.
    Verify both the public registry version and an installation from the public ZIP.
 
+### v1.0.5 Draft Smoke Checklist
+
+- Confirm the packaged app shows `1.0.5` metadata on both architectures.
+- Settings -> About shows `v1.0.5`, sourced from `app.getVersion()`.
+- Codex process discovery runs asynchronously; idle WorkBuddy monitoring stops,
+  and restored WorkBuddy tasks can receive activity again.
+- The VS Code/Cursor terminal-focus extension follows its General-settings
+  switch; an existing installation stays enabled on upgrade.
+- Local request and navigation guards reject untrusted input; normal hook
+  and browser-bridge requests remain accepted.
+- Verify both architectures, all four packages, signatures, Electron fuses,
+  packaged Koffi calls, and the npm installer's fixed ZIP checksums.
+- Verify the public npm short command upgrades the previous application to
+  1.0.5 and preserves user preferences and imported themes.
+
 ### v1.0.4 Draft Smoke Checklist
 
 - Confirm the packaged app shows `1.0.4` metadata on both architectures.
